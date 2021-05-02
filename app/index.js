@@ -176,7 +176,7 @@ client.on("message", message => {
  
   if (message.content.toLowerCase().includes("merde"))
     message.react("💩");  
-
+   
   if (message.content.startsWith("poubelle")) message.react("🚮");
 
   if (message.content.startsWith("Tu parles de ce bot chiant et inutile là ?"))
