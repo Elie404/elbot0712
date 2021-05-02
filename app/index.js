@@ -305,7 +305,7 @@ client.on("message", message => {
       message.channel.send("let's go :bricks:");
     }
 
-    if (command === "invit") {
+    if (command === "invite") {
       message.channel.send(
         "https://discord.com/api/oauth2/authorize?client_id=809344905674489866&permissions=3152128&scope=bot"
       );
