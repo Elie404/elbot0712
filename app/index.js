@@ -13,11 +13,13 @@ client.on("ready", () => {
     `Oh tiens je m'appelle ${client.user.tag} (ID : ${client.user.id})`
   );
   {
-    client.user.setActivity("Chante tutititutu tout en changeant pour ubuntu",
+  client.user.setActivity("Chante tutititutu tout en changeant pour ubuntu", {
   type: "STREAMING",
   url: "https://www.twitch.tv/eli__zay"
-  });
-  // Auto Up
+});
+    
+  }
+    // Auto Up
   setInterval(() => {
     fetch("https://ac-v2.glitch.me").catch(err => {});
     fetch("https://achost.tk").catch(err => {});
