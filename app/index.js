@@ -13,7 +13,7 @@ client.on("ready", () => {
     `Oh tiens je m'appelle ${client.user.tag} (ID : ${client.user.id})`
   );
   {
-    client.user.setActivity("Chante tutititutu tout en changeant pour ubuntu");
+    bot.change_presence(activity=discord.Streaming(name="Chante tutititutu tout en changeant pour ubuntu!", url="https://www.twitch.tv/eli__zay"));
   }
   // Auto Up
   setInterval(() => {
