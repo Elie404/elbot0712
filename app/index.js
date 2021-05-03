@@ -16,7 +16,7 @@ client.on("ready", () => {
     client.user.setActivity("Chante tutititutu tout en changeant pour ubuntu", {
   type: "STREAMING",
   url: "https://www.twitch.tv/eli__zay"
-});
+   };
   // Auto Up
   setInterval(() => {
     fetch("https://ac-v2.glitch.me").catch(err => {});
