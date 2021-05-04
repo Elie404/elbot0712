@@ -259,11 +259,7 @@ client.on("message", message => {
     if (message.content.toLowerCase().includes("juin"))
       message.channel.send("**TG FARÈS**");
     
-     if (message.content.toLowerCase().includes("nice"))
-      message.channel.send("https://tenor.com/view/noice-nice-click-gif-8843762");
-    
-      if (message.content.toLowerCase().includes("noice"))
-      message.channel.send("https://tenor.com/view/noice-nice-click-gif-8843762");
+
 
     if (message.content.toLowerCase().includes("scratch"))
       message.channel.send("Chat orange de merde");
