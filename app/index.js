@@ -230,7 +230,7 @@ client.on("message", message => {
       let nombre = nombrelist[Math.floor(Math.random() * nombrelist.length)];
 
       let songList = [
-        "https://cdn.discordapp.com/attachments/574163441154129930/813048843569594408/FullSizeRender.mp3"
+        "https://cdn.discordapp.com/attachments/795288700594290698/840260770041823252/FullSizeRender.mp3"
       ];
       let song = songList[Math.floor(Math.random() * songList.length)];
 
