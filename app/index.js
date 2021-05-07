@@ -220,7 +220,6 @@ client.on("message", message => {
 
   if (message.content.startsWith("courgette")) message.channel.send("Counasse");
 
-  {
     function play() {
       const channel = client.channels.cache.get("817012298057121852");
       if (!channel)
@@ -250,7 +249,6 @@ client.on("message", message => {
             "[BriqueLoop] Erreur lors de la connexion au salon vocal." + e
           );
         });
-    }
 
     if (message.content.toLowerCase().includes("ok")) message.react("🆗");
     
@@ -327,6 +325,8 @@ message.channel.send(embed);
           .setColor("BLURPLE")
           .setFooter("(En plus si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà")
         message.channel.send(embed);
+        
+      }
 
     if (command === "test")
       message.channel.send("Y'a quoi zbi? Sinon moi je fonctionne.");
