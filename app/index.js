@@ -309,8 +309,8 @@ var embed = new Discord.MessageEmbed()
 .setTitle("**VOICI LE TWITTER PRINCIPAL DU SERVEUR CHANGEZ POUR UBUNTU**")
 .setDescription(
 "https://twitter.com/ubuntulebest")
-.setColor("BLUE");
-setFooter("Abonne toi 👀")
+.setColor("BLUE")
+.setFooter("Abonne toi 👀")
 message.channel.send(embed);
     
   
