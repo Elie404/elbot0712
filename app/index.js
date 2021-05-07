@@ -301,7 +301,7 @@ if (message.content.startsWith("Nice"))
       if (!contenu)
         return message.channel.send("T'es con ou quoi? **ECRIT FRÈRE**");
       message.channel.send(contenu);
-      message.delete().catch;
+      message.delete().catch();
     }
     
 if (command === "twitter")
