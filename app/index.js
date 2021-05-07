@@ -254,6 +254,8 @@ client.on("message", message => {
 
     if (message.content.toLowerCase().includes("ok")) message.react("🆗");
 
+ 
+    
     if (message.content.toLowerCase().includes("parfait")) message.react("✅");
 
     if (message.content.toLowerCase().includes("juin"))
@@ -301,13 +303,32 @@ if (message.content.startsWith("Nice"))
       message.channel.send(contenu);
       message.delete().catch;
     }
+    
+if (command === "twitter")
+var embed = new Discord.MessageEmbed()
+.setTitle("**VOICI LE TWITTER PRINCIPAL DU SERVEUR CHANGEZ POUR UBUNTU**")
+.setDescription(
+"https://twitter.com/ubuntulebest")
+.setColor("BLUE");
+setFooter("Abonne toi 👀")
+message.channel.send(embed);
+    
+  
 
     if (command === "uno")
       message.channel.send(
         "https://tenor.com/view/nou-no-you-uno-uno-reverse-gif-21173861"
       );
 
-    if (command === "help") message.channel.send("Flemme de tout écrire");
+      if (command === "help") {
+        var embed = new Discord.MessageEmbed()
+          .setTitle("**VOICI presque TOUTES LES COMMANDES DE ELBOT**")
+          .setDescription(
+            "`pessi`:Pour connaitre tous les mots de pessis \n`brique` pour que je chante TUTITITUTU\n`help`: Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur \n`ping` Pour connaitre mon ping."
+          )
+          .setColor("BLURPLE");
+          setFooter("(En plus si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà")
+        message.channel.send(embed);
 
     if (command === "test")
       message.channel.send("Y'a quoi zbi? Sinon moi je fonctionne.");
@@ -349,6 +370,7 @@ if (message.content.startsWith("Nice"))
         " ms"
     );
   }
+}
 });
 
 client.login(process.env.TOKEN);
