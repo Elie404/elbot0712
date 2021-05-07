@@ -15,7 +15,7 @@ client.on("ready", () => {
   {
   client.user.setActivity("Chante tutititutu tout en changeant pour ubuntu", {
   type: "STREAMING",
-  url: "https://www.twitch.tv/eli__zay"
+  url: "https://www.youtube.com/channel/UCZHprEd5P935nlVoFR_kqew/featured"
 });
     
   }
