@@ -479,12 +479,11 @@ message.channel.send(embed);
       message.channel.send("let's go :bricks:");
     }
 
+    if (command === "info")
+    message.channel.send (getInfo)
+
 if (command === "heberger")
 message.channel.send("Je suis en ce moment héberger sur Heroku!")
-    
-if (command === "version")
-message.channel.send (version)
-
 
     if (command === "invite") {
       message.channel.send(
