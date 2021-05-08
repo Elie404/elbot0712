@@ -33,7 +33,7 @@ client.on("message", async message => {
     );
   }
 
-  const songInfo = await ytdl.getInfo(args[1]);
+  const songInfo = ytdl.getInfo(args[1]);
   const song = {
         title: songInfo.videoDetails.title,
         url: songInfo.videoDetails.video_url,
