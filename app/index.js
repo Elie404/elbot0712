@@ -126,7 +126,7 @@ function loop (message, serverQueue) {
   if (!message.member.voice.channel) // on vérifie que l'utilisateur est bien dans un salon vocal pour skip
   {
           return message.channel.send(
-              "Vous devez être dans un salon vocal pour stopper la lecture!"
+              "Vous devez être dans un salon vocal pour répéter la lecture!"
           );
   }
   if (!serverQueue) // On vérifie si une musique est en cours
@@ -134,7 +134,7 @@ function loop (message, serverQueue) {
           return message.channel.send("Aucune lecture de musique en cours !");
   }
   serverQueue.songs = [];
-  serverQueue.connection.dispatcher.end();
+  serverQueue.connection.dispatcher.loop();
 }
 
 function play(guild, song) {
