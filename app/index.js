@@ -311,8 +311,7 @@ var embed = new Discord.MessageEmbed()
 .setColor("BLUE")
 .setFooter("Abonne toi 👀")
 message.channel.send(embed);
-    
-  
+
 
     if (command === "uno")
       message.channel.send(
@@ -323,7 +322,9 @@ message.channel.send(embed);
         var embed = new Discord.MessageEmbed()
           .setTitle("**VOICI presque TOUTES LES COMMANDES DE ELBOT**")
           .setDescription(
-            "`pessi`:Pour connaitre tous les mots de pessis \n`brique` pour que je chante TUTITITUTU\n`help`: Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur \n`ping` Pour connaitre mon ping."
+
+
+            "`pessi`:Pour connaitre tous les mots de pessis \n`brique` pour que je chante TUTITITUTU\n`help`: Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur \n`heberger` Pour savoir sur quel hébergeur je suis héberger en ce moment!\n`ping` Pour connaitre mon ping."
           )
           .setColor("BLURPLE")
           .setFooter("(En plus si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà")
@@ -338,6 +339,11 @@ message.channel.send(embed);
       play();
       message.channel.send("let's go :bricks:");
     }
+
+if (command === "hebergeur")
+message.channel.send("Je suis en ce moment héberger sur Heroku!")
+    
+
 
     if (command === "invite") {
       message.channel.send(
@@ -368,7 +374,7 @@ message.channel.send(embed);
         client.ws.ping +
         " ms"
     );
+
   }
 });
-
 client.login(process.env.TOKEN);
