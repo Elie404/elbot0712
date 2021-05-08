@@ -15,7 +15,8 @@
     "discord-reaction-role": "^2.0.0",
     "ffmpeg-static": "latest",
     "node-opus": "latest",
-    "@discordjs/opus": "latest"
+    "@discordjs/opus": "latest",
+    "ytdl-core": "latest"
   },
   "engines": {
     "node": "12.x"
