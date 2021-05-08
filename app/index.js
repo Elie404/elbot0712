@@ -479,8 +479,8 @@ message.channel.send(embed);
       message.channel.send("let's go :bricks:");
     }
 
-    if (command === "info")
-    message.channel.send (getInfo)
+    if (command === "version")
+    message.channel.send ("En ce moment je tourne sur la version 1.1.0")
 
 if (command === "heberger")
 message.channel.send("Je suis en ce moment héberger sur Heroku!")
