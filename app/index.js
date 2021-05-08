@@ -33,12 +33,6 @@ client.on("ready", () => {
   }, 70000);
 });
 
-const songInfo = ytdl.getInfo(args[1]);
-const song = {
-title: songInfo.videoDetails.title,
-url : songInfo.videoDetails.video_url,
-};
-
 async function execute(message, serverQueue) {
   const args = message.content.split(" "); // On récupère les arguments dans le message pour la suite
 
@@ -52,6 +46,41 @@ async function execute(message, serverQueue) {
     return message.channel.send(
       "J'ai besoin des permissions pour rejoindre le salon et pour y jouer de la musique!"
     );
+  }
+
+  const songInfo = await ytdl.getInfo(args[1]);
+  const song = {
+        title: songInfo.videoDetails.title,
+        url: songInfo.videoDetails.video_url,
+   };
+
+  if (!serverQueue) {
+    const queueContruct = {
+      textChannel: message.channel,
+      voiceChannel: voiceChannel,
+      connection: null,
+      songs: [],
+      volume: 5,
+      playing: true
+    };
+  
+	// On ajoute la queue du serveur dans la queue globale:
+	queue.set(message.guild.id, queueConstruct);
+	// On y ajoute la musique
+	queueContruct.songs.push(song);
+ 
+    try {
+      var connection = await voiceChannel.join();
+      queueContruct.connection = connection;
+      play(message.guild, queueContruct.songs[0]);
+    } catch (err) {
+      console.log(err);
+      queue.delete(message.guild.id);
+      return message.channel.send(err);
+    }
+  } else {
+    serverQueue.songs.push(song);
+    return message.channel.send(`${song.title} has been added to the queue!`);
   }
 }
 
@@ -75,14 +104,6 @@ function play(guild, song) {
   serverQueue.textChannel.send(`Démarrage de la musique: **${song.title}**`);
 }
 
-if (!serverQueue) {
-
-}else {
- serverQueue.songs.push(song);
- console.log(serverQueue.songs);
- return message.channel.send(`${song.title} has been added to the queue!`);
-}
-
 const queueConstruct = {
  textChannel: message.channel,
  voiceChannel: voiceChannel,
@@ -92,10 +113,6 @@ const queueConstruct = {
  playing: true,
 };
 
-// On ajoute la queue du serveur dans la queue globale:
-queue.set(message.guild.id, queueConstruct);
-// On y ajoute la musique
-queueContruct.songs.push(song);
 
 try {
  // On connecte le bot au salon vocal et on sauvegarde l'objet connection
