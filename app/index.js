@@ -391,6 +391,10 @@ client.on("message", message => {
 
     if (message.content.toLowerCase().includes("ok")) message.react("🆗");
     
+    if (message.content.toLowerCase().includes("minecraft")) message.react(":minecraft:836844843559944193");
+
+    if (message.content.toLowerCase().includes("among")) message.react(":among:817444152307613706");
+
     if (message.content.toLowerCase().includes("parfait")) message.react("✅");
 
     if (message.content.toLowerCase().includes("juin"))
@@ -414,7 +418,7 @@ if (message.content.startsWith("Nice"))
 
     if (message.content.toLowerCase().includes("bonjoir"))
       message.channel.send("Hachoir");
-
+ 
     if (message.content.toLowerCase().includes("rmxbot"))
       message.channel.send(
         "Ptdr il est plus inutile que moi mais je l'aime bien"
