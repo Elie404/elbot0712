@@ -371,7 +371,6 @@ message.channel.send(embed);
         " ms"
     );
   }
-}
 });
 
 client.login(process.env.TOKEN);
