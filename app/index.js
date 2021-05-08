@@ -247,8 +247,8 @@ client.on("message", message => {
         .catch(e => {
           console.log(
             "[BriqueLoop] Erreur lors de la connexion au salon vocal." + e
-          );
-        });
+          );}
+        );}
 
     if (message.content.toLowerCase().includes("ok")) message.react("🆗");
     
@@ -365,7 +365,6 @@ message.channel.send("Je suis en ce moment héberger sur Heroku!")
       message.channel.send("Je suis Siri votre assistant personnel ", {
         tts: true
       });
-  }
 
   if (command === "ping") {
     if (message.author.bot === true) return;
