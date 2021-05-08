@@ -2,10 +2,15 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const fetch = require("node-fetch");
 var prefix = "e!";
+const ytdl = require('ytdl-core');
 const ReactionRoleManager = require("discord-reaction-role");
 const manager = new ReactionRoleManager(client, {
   storage: "./reaction-role.json"
 });
+
+// NOUVEAU
+const queue = new Map();
+
 client.reactionRoleManager = manager;
 
 client.on("ready", () => {
@@ -27,6 +32,118 @@ client.on("ready", () => {
     fetch("https://eliebot.glitch.me").catch(err => {});
   }, 70000);
 });
+
+async function execute(message, serverQueue) {
+  const args = message.content.split(" "); // On récupère les arguments dans le message pour la suite
+
+  const voiceChannel = message.member.voice.channel;
+  if (!voiceChannel) // Si l'utilisateur n'est pas dans un salon vocal
+    return message.channel.send(
+      "Vous devez être dans un salon vocal!"
+    );
+  const permissions = voiceChannel.permissionsFor(message.client.user); // On récupère les permissions du bot pour le salon vocal
+  if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) { // Si le bot n'a pas les permissions
+    return message.channel.send(
+      "J'ai besoin des permissions pour rejoindre le salon et pour y jouer de la musique!"
+    );
+  }
+}
+
+function play(guild, song) {
+  const serverQueue = queue.get(guild.id); // On récupère la queue de lecture
+  if (!song) { // Si la musique que l'utilisateur veux lancer n'existe pas on annule tout et on supprime la queue de lecture
+    serverQueue.voiceChannel.leave();
+    queue.delete(guild.id);
+    return;
+  }
+
+// On lance la musique 
+  const dispatcher = serverQueue.connection
+    .play(ytdl(song.url, { filter: 'audioonly' }))
+    .on("finish", () => { // On écoute l'événement de fin de musique
+      serverQueue.songs.shift(); // On passe à la musique suivante quand la courante se termine 
+      play(guild, serverQueue.songs[0]);
+    })
+    .on("error", error => console.error(error));
+  dispatcher.setVolume(serverQueue.volume); // On définie le volume
+  serverQueue.textChannel.send(`Démarrage de la musique: **${song.title}**`);
+}
+
+if (!serverQueue) {
+
+}else {
+ serverQueue.songs.push(song);
+ console.log(serverQueue.songs);
+ return message.channel.send(`${song.title} has been added to the queue!`);
+}
+
+const queueConstruct = {
+ textChannel: message.channel,
+ voiceChannel: voiceChannel,
+ connection: null,
+ songs: [],
+ volume: 1,
+ playing: true,
+};
+
+// On ajoute la queue du serveur dans la queue globale:
+queue.set(message.guild.id, queueConstruct);
+// On y ajoute la musique
+queueContruct.songs.push(song);
+
+try {
+ // On connecte le bot au salon vocal et on sauvegarde l'objet connection
+ var connection = await voiceChannel.join();
+ queueContruct.connection = connection;
+ // On lance la musique
+ play(message.guild, queueContruct.songs[0]);
+} catch (err) {
+ //On affiche les messages d'erreur si le bot ne réussi pas à se connecter, on supprime également la queue de lecture
+ console.log(err);
+ queue.delete(message.guild.id);
+ return message.channel.send(err);
+}
+
+function play(guild, song) {
+  const serverQueue = queue.get(guild.id); // On récupère la queue de lecture
+  if (!song) { // Si la musique que l'utilisateur veux lancer n'existe pas on annule tout et on supprime la queue de lecture
+    serverQueue.voiceChannel.leave();
+    queue.delete(guild.id);
+    return;
+  }
+
+// On lance la musique 
+  const dispatcher = serverQueue.connection
+    .play(ytdl(song.url, { filter: 'audioonly' }))
+    .on("finish", () => { // On écoute l'événement de fin de musique
+      serverQueue.songs.shift(); // On passe à la musique suivante quand la courante se termine 
+      play(guild, serverQueue.songs[0]);
+    })
+    .on("error", error => console.error(error));
+  dispatcher.setVolume(serverQueue.volume); // On définie le volume
+  serverQueue.textChannel.send(`Démarrage de la musique: **${song.title}**`);
+}
+
+function skip(message, serverQueue) {
+  if (!message.member.voice.channel) // on vérifie que l'utilisateur est bien dans un salon vocal pour skip
+    return message.channel.send(
+      "Vous devez être dans un salon vocal pour passer une musique!"
+    );
+  if (!serverQueue) // On vérifie si une musique est en cours
+    return message.channel.send("Aucune lecture de musique en cours !");
+  serverQueue.connection.dispatcher.end(); // On termine la musique courante, ce qui lance la suivante grâce à l'écoute d'événement finish
+}
+
+function stop(message, serverQueue) {
+ if (!message.member.voice.channel) // on vérifie que l'utilisateur est bien dans un salon vocal pour skip
+    return message.channel.send(
+      "Vous devez être dans un salon vocal pour stopper la lecture!"
+    );
+  if (!serverQueue) // On vérifie si une musique est en cours
+    return message.channel.send("Aucune lecture de musique en cours !");
+    serverQueue.songs = [];
+    serverQueue.connection.dispatcher.end();
+}
 
 client.on("message", message => {
   const args = message.content
@@ -288,6 +405,21 @@ if (message.content.startsWith("Nice"))
       message.channel.send(
         "ISSOU DE SECOURS https://tenor.com/view/issou-de-secours-gif-14359921"
       );
+
+	if (command === "play") {
+		execute(message, serverQueue); // On appel execute qui soit initialise et lance la musique soit ajoute à la queue la musique
+    return;
+	}
+	
+	if (command === "skip") {
+		skip(message, serverQueue); // Permettra de passer à la musique suivante
+	return;
+	}
+	
+	if (command === "stop") {
+		stop(message, serverQueue); // Permettra de stopper la lecture
+		return;
+	}
 
     if (message.content === "Je le répète mais la place de la femme c'est où?")
       message.channel.send("Dans la kouisine ouais cousin");
