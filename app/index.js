@@ -256,7 +256,10 @@ client.on("message", message => {
 
     if (message.content.toLowerCase().includes("juin"))
       message.channel.send("**TG FARÈS**");
-    
+
+      if (message.content.toLowerCase().includes("}"))
+      message.channel.send("Connard de caractere de merde ");
+      
 if (message.content.startsWith("Nice"))
     message.channel.send(
       "https://tenor.com/view/noice-nice-click-gif-8843762")
