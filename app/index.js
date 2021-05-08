@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const fetch = require("node-fetch");
 const ytdl = require("ytdl-core");
+const serverQueue = queue.get(message.guild.id);
 var prefix = "e!";
 const ReactionRoleManager = require("discord-reaction-role");
 const manager = new ReactionRoleManager(client, {
@@ -366,8 +367,6 @@ message.channel.send("Je suis en ce moment héberger sur Heroku!")
       message.channel.send("Je suis Siri votre assistant personnel ", {
         tts: true
       });
-
-  const serverQueue = queue.get(message.guild.id);
 
   if (command === "play") {
     execute(message, serverQueue);
