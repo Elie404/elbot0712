@@ -482,6 +482,8 @@ message.channel.send(embed);
 if (command === "heberger")
 message.channel.send("Je suis en ce moment héberger sur Heroku!")
     
+if (command === "version")
+message.channel.send (version)
 
 
     if (command === "invite") {
