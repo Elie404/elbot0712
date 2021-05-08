@@ -361,8 +361,6 @@ message.channel.send(embed);
       });
   }
 
-  {
-  }
   if (command === "ping") {
     if (message.author.bot === true) return;
     message.channel.send(
