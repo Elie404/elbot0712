@@ -2,7 +2,6 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const fetch = require("node-fetch");
 const ytdl = require("ytdl-core");
-const serverQueue = queue.get(message.guild.id);
 var prefix = "e!";
 const ReactionRoleManager = require("discord-reaction-role");
 const manager = new ReactionRoleManager(client, {
@@ -369,13 +368,13 @@ message.channel.send("Je suis en ce moment héberger sur Heroku!")
       });
 
   if (command === "play") {
-    execute(message, serverQueue);
+    execute(message, queue.get(message.guild.id));
     return;
   } else if (command === "skip") {
-    skip(message, serverQueue);
+    skip(message, queue.get(message.guild.id));
     return;
   } else if (command === "stop") {
-    stop(message, serverQueue);
+    stop(message, queue.get(message.guild.id));
     return;
   } else {
     message.channel.send("You need to enter a valid command!");
@@ -407,7 +406,7 @@ message.channel.send("Je suis en ce moment héberger sur Heroku!")
         url: songInfo.videoDetails.video_url,
    };
 
-  if (!serverQueue) {
+  if (!queue.get(message.guild.id)) {
     const queueContruct = {
       textChannel: message.channel,
       voiceChannel: voiceChannel,
@@ -431,51 +430,51 @@ message.channel.send("Je suis en ce moment héberger sur Heroku!")
       return message.channel.send(err);
     }
   } else {
-    serverQueue.songs.push(song);
+    queue.get(message.guild.id).songs.push(song);
     return message.channel.send(`${song.title} has been added to the queue!`);
   }
 }
 
-function skip(message, serverQueue) {
+function skip(message, queue.get(message.guild.id)) {
   if (!message.member.voice.channel)
     return message.channel.send(
       "You have to be in a voice channel to stop the music!"
     );
-  if (!serverQueue)
+  if (!queue.get(message.guild.id))
     return message.channel.send("There is no song that I could skip!");
-  serverQueue.connection.dispatcher.end();
+  queue.get(message.guild.id).connection.dispatcher.end();
 }
 
-function stop(message, serverQueue) {
+function stop(message, queue.get(message.guild.id)) {
   if (!message.member.voice.channel)
     return message.channel.send(
       "You have to be in a voice channel to stop the music!"
     );
     
-  if (!serverQueue)
+  if (!queue.get(message.guild.id))
     return message.channel.send("There is no song that I could stop!");
     
-  serverQueue.songs = [];
-  serverQueue.connection.dispatcher.end();
+  queue.get(message.guild.id).songs = [];
+  queue.get(message.guild.id).connection.dispatcher.end();
 }
 
 function play(guild, song) {
-  const serverQueue = queue.get(guild.id);
+  const queue.get(message.guild.id) = queue.get(guild.id);
   if (!song) {
-    serverQueue.voiceChannel.leave();
+    queue.get(message.guild.id).voiceChannel.leave();
     queue.delete(guild.id);
     return;
   }
 
-  const dispatcher = serverQueue.connection
+  const dispatcher = queue.get(message.guild.id).connection
     .play(ytdl(song.url))
     .on("finish", () => {
-      serverQueue.songs.shift();
-      play(guild, serverQueue.songs[0]);
+      queue.get(message.guild.id).songs.shift();
+      play(guild, queue.get(message.guild.id).songs[0]);
     })
     .on("error", error => console.error(error));
-  dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-  serverQueue.textChannel.send(`Start playing: **${song.title}**`);
+  dispatcher.setVolumeLogarithmic(queue.get(message.guild.id).volume / 5);
+  queue.get(message.guild.id).textChannel.send(`Start playing: **${song.title}**`);
 }
 });
 client.login(process.env.TOKEN);
