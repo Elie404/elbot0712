@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const fetch = require("node-fetch");
+const ytdl = require("ytdl-core");
 var prefix = "e!";
 const ReactionRoleManager = require("discord-reaction-role");
 const manager = new ReactionRoleManager(client, {
@@ -366,21 +367,6 @@ message.channel.send("Je suis en ce moment héberger sur Heroku!")
         tts: true
       });
 
-  if (command === "ping") {
-    if (message.author.bot === true) return;
-    message.channel.send(
-      "Le ping pong c'est de la merde je préfère utiliser des briques comme raquettes mais en tout cas j'ai " +
-        client.ws.ping +
-        " ms"
-    );
-	
-const ytdl = require("ytdl-core");
-
-
-client.on("message", async message => {
-  if (message.author.bot) return;
-  if (!message.content.startsWith(prefix)) return;
-
   const serverQueue = queue.get(message.guild.id);
 
   if (command === "play") {
@@ -394,8 +380,15 @@ client.on("message", async message => {
     return;
   } else {
     message.channel.send("You need to enter a valid command!");
-  }
-});
+  };
+
+  if (command === "ping") {
+    if (message.author.bot === true) return;
+    message.channel.send(
+      "Le ping pong c'est de la merde je préfère utiliser des briques comme raquettes mais en tout cas j'ai " +
+        client.ws.ping +
+        " ms"
+    );
 
   const voiceChannel = message.member.voice.channel;
   if (!voiceChannel)
