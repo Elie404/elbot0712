@@ -13,7 +13,6 @@
     "node-fetch": "^2.6.1",
     "opusscript": "latest",
     "discord-reaction-role": "^2.0.0",
-    "@discordjs/opus": "latest"
   },
   "engines": {
     "node": "12.x"
