@@ -376,7 +376,27 @@ message.channel.send("Je suis en ce moment héberger sur Heroku!")
 	
 const ytdl = require("ytdl-core");
 
+
+client.on("message", async message => {
+  if (message.author.bot) return;
+  if (!message.content.startsWith(prefix)) return;
+
   const serverQueue = queue.get(message.guild.id);
+
+  if (command === "play") {
+    execute(message, serverQueue);
+    return;
+  } else if (command === "skip") {
+    skip(message, serverQueue);
+    return;
+  } else if (command === "stop") {
+    stop(message, serverQueue);
+    return;
+  } else {
+    message.channel.send("You need to enter a valid command!");
+  }
+});
+
   const voiceChannel = message.member.voice.channel;
   if (!voiceChannel)
     return message.channel.send(
@@ -424,7 +444,7 @@ const ytdl = require("ytdl-core");
   }
 }
 
-  if (command === "skip") {
+function skip(message, serverQueue) {
   if (!message.member.voice.channel)
     return message.channel.send(
       "You have to be in a voice channel to stop the music!"
@@ -434,20 +454,20 @@ const ytdl = require("ytdl-core");
   serverQueue.connection.dispatcher.end();
 }
 
-  if (command === "stop") {
+function stop(message, serverQueue) {
   if (!message.member.voice.channel)
     return message.channel.send(
       "You have to be in a voice channel to stop the music!"
     );
     
-  if (command === "queue") {
+  if (!serverQueue)
     return message.channel.send("There is no song that I could stop!");
     
   serverQueue.songs = [];
   serverQueue.connection.dispatcher.end();
 }
 
-  if (command === "play") {
+function play(guild, song) {
   const serverQueue = queue.get(guild.id);
   if (!song) {
     serverQueue.voiceChannel.leave();
@@ -465,8 +485,6 @@ const ytdl = require("ytdl-core");
   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
   serverQueue.textChannel.send(`Start playing: **${song.title}**`);
 }
-
-client.login(token);
   }
 });
 client.login(process.env.TOKEN);
