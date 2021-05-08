@@ -33,6 +33,12 @@ client.on("ready", () => {
   }, 70000);
 });
 
+const songInfo = ytdl.getInfo(args[1]);
+const song = {
+title: songInfo.videoDetails.title,
+url : songInfo.videoDetails.video_url,
+};
+
 async function execute(message, serverQueue) {
   const args = message.content.split(" "); // On récupère les arguments dans le message pour la suite
 
@@ -93,7 +99,7 @@ queueContruct.songs.push(song);
 
 try {
  // On connecte le bot au salon vocal et on sauvegarde l'objet connection
- var connection = await voiceChannel.join();
+ var connection = voiceChannel.join();
  queueContruct.connection = connection;
  // On lance la musique
  play(message.guild, queueContruct.songs[0]);
