@@ -340,7 +340,7 @@ message.channel.send(embed);
       message.channel.send("let's go :bricks:");
     }
 
-if (command === "hebergeur")
+if (command === "heberger")
 message.channel.send("Je suis en ce moment héberger sur Heroku!")
     
 
