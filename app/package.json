@@ -12,7 +12,8 @@
     "easy-json-database": "^1.3.0",
     "node-fetch": "^2.6.1",
     "opusscript": "latest",
-    "discord-reaction-role": "^2.0.0"
+    "discord-reaction-role": "^2.0.0",
+    "ffmpeg-static": "latest"
   },
   "engines": {
     "node": "12.x"
