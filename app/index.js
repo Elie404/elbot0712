@@ -122,6 +122,20 @@ function stop(message, serverQueue) {
         serverQueue.songs = [];
         serverQueue.connection.dispatcher.end();
 }
+function loop (message, serverQueue) {
+  if (!message.member.voice.channel) // on vérifie que l'utilisateur est bien dans un salon vocal pour skip
+  {
+          return message.channel.send(
+              "Vous devez être dans un salon vocal pour stopper la lecture!"
+          );
+  }
+  if (!serverQueue) // On vérifie si une musique est en cours
+  {
+          return message.channel.send("Aucune lecture de musique en cours !");
+  }
+  serverQueue.songs = [];
+  serverQueue.connection.dispatcher.end();
+}
 
 function play(guild, song) {
         console.log(song);
@@ -165,7 +179,10 @@ client.on("message", async message => {
                 stop(message, serverQueue); // Permettra de stopper la lecture
                 return;
         }
-});
+        else if (message.content.startsWith(`e!loop`)) {
+          loop(message, serverQueue); // Permettra de répéter la lecture
+          return;
+}});
 
 client.on("message", message => {
   const args = message.content
@@ -463,7 +480,7 @@ message.channel.send(embed);
 
       if (command === "help") {
         var embed = new Discord.MessageEmbed()
-          .setTitle("**VOICI presque TOUTES LES COMMANDES DE ELBOT**")
+          .setTitle("**VOICI TOUTES LES COMMANDES DE ELBOT**")
           .setDescription(
 
 
