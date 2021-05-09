@@ -155,7 +155,7 @@ function play(guild, song) {
             .on("error", error => console.error(error));
         dispatcher.setVolume(1); // On définie le volume
         serverQueue.textChannel.send(`Démarrage de la musique: **${song.title}**`);
-}
+};
 
 client.on("message", async message => {
         if (message.author.bot) {
@@ -534,7 +534,7 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
       client.login(process.env.TOKEN).then(message.channel.send("C'est bon bah"))
       });
       }
-      
+
     if (message.content.toLowerCase().startsWith("siri"))
       message.channel.send("Je suis Siri votre assistant personnel ", {
         tts: true
@@ -547,8 +547,7 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
         client.ws.ping +
         " ms"
     );
-	
-
-  }
+    
+    }
 });
 client.login(process.env.TOKEN);
