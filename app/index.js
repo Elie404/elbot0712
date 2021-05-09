@@ -441,8 +441,8 @@ if (message.content.startsWith("Nice"))
         "Ptdr il est plus inutile que moi mais je l'aime bien"
       );
 
-      if (message.content.toLowerCase().includes("Redémarrage réussi !"))
-      message.channel.send("Hop tg");
+      if (message.content.toLowerCase().includes("Redémarrage réussi"));
+      message.channel.send("Hachoir");
 
     if (message.content.toLowerCase().includes("chromebook"))
       message.channel.send("Ubuntu>>>>>>>>>>");
