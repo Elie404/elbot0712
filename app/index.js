@@ -534,6 +534,7 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
       client.login(process.env.TOKEN).then(message.channel.send("C'est bon bah"))
       });
       }
+      
     if (message.content.toLowerCase().startsWith("siri"))
       message.channel.send("Je suis Siri votre assistant personnel ", {
         tts: true
