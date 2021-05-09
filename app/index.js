@@ -452,7 +452,7 @@ if (message.content.startsWith("Nice"))
     if (message.content === "Je le répète mais la place de la femme c'est où?")
       message.channel.send("Dans la kouisine ouais cousin");
 
-if (message.content === ":zap: Redémarrage réussi !")
+if (message.content === "⚡ Redémarrage réussi !")
 message.channel.send("hop tg")
 
     if (message.content === "Je le répète mais la place de l'homme c'est où?")
