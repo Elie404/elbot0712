@@ -441,11 +441,9 @@ if (message.content.startsWith("Nice"))
         "Ptdr il est plus inutile que moi mais je l'aime bien"
       );
 
-      if (message.content.toLowerCase().includes("Redémarrage réussi !"))
-      message.channel.send("Hop tg");
-
     if (message.content.toLowerCase().includes("chromebook"))
       message.channel.send("Ubuntu>>>>>>>>>>");
+
 
     if (message.content === "issou")
       message.channel.send(
@@ -519,6 +517,7 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
       );
     }
 
+  
     if (command === "pessi") {
       var embed = new Discord.MessageEmbed()
         .setTitle("**LES MOTS DES PESSI**")
