@@ -455,6 +455,9 @@ if (message.content.startsWith("Nice"))
     if (message.content === "Je le répète mais la place de l'homme c'est où?")
       message.channel.send("Devant le pc entrain de se br****");
 
+      if (message.content === ":zap: Redémarrage réussi !")
+      message.channel.send("Hop tg")
+
     if (command === "say") {
       var contenu = args.join(" ");
       if (!contenu)
