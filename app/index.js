@@ -122,7 +122,7 @@ function stop(message, serverQueue) {
         serverQueue.songs = [];
         serverQueue.connection.dispatcher.end();
 }
-function loop (message, serverQueue) {
+function loop(message, serverQueue) {
   if (!message.member.voice.channel) // on vérifie que l'utilisateur est bien dans un salon vocal pour skip
   {
           return message.channel.send(
@@ -505,6 +505,9 @@ message.channel.send(embed);
 
 if (command === "heberger")
 message.channel.send("Je suis en ce moment héberger sur Heroku!")
+
+if (command === "github")
+message.channel.send("Voici le lien de mon Github\nhttps://github.com/Elie404/elbot0712")
 
     if (command === "invite") {
       message.channel.send(
