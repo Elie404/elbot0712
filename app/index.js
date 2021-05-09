@@ -441,6 +441,9 @@ if (message.content.startsWith("Nice"))
         "Ptdr il est plus inutile que moi mais je l'aime bien"
       );
 
+      if (message.content.toLowerCase().includes("Redémarrage réussi !"))
+      message.channel.send("Hop tg");  
+
     if (message.content.toLowerCase().includes("chromebook"))
       message.channel.send("Ubuntu>>>>>>>>>>");
 
@@ -452,15 +455,10 @@ if (message.content.startsWith("Nice"))
     if (message.content === "Je le répète mais la place de la femme c'est où?")
       message.channel.send("Dans la kouisine ouais cousin");
 
-if (message.content === "⚡ Redémarrage réussi !")
-message.channel.send("hop tg")
-
     if (message.content === "Je le répète mais la place de l'homme c'est où?")
       message.channel.send("Devant le pc entrain de se br****");
 
-      if (message.content === "win restart")
-      message.channel.send("Hop tg")
-
+    
     if (command === "say") {
       var contenu = args.join(" ");
       if (!contenu)
