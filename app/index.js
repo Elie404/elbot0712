@@ -507,7 +507,7 @@ if (command === "heberger")
 message.channel.send("Je suis en ce moment héberger sur Heroku!")
 
 if (command === "github")
-message.channel.send("Voici le lien de mon Github\nhttps://github.com/Elie404/elbot0712")
+message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
 
     if (command === "invite") {
       message.channel.send(
