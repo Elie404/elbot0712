@@ -442,7 +442,7 @@ if (message.content.startsWith("Nice"))
       );
 
       if (message.content.toLowerCase().includes("Redémarrage réussi"));
-      message.channel.send("Hachoir");
+      message.channel.send("hop tg");
 
     if (message.content.toLowerCase().includes("chromebook"))
       message.channel.send("Ubuntu>>>>>>>>>>");
