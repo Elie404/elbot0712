@@ -487,7 +487,7 @@ message.channel.send(embed);
           .setDescription(
 
 
-            "`pessi` Pour connaitre tous les mots de pessis \n`brique` pour que je chante TUTITITUTU\n`play` suivi d'un lien youtube pour que je chante la musique de ton choix\n`help` Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur \n`heberger` Pour savoir sur quel hébergeur je suis héberger en ce moment!\n`github`Pour voir mon repo github\n`version` Pour connaitre sur quelle version je tourne en ce moment\n`ping` Pour connaitre mon ping."
+            "`pessi` Pour connaitre tous les mots de pessis \n`brique` pour que je chante TUTITITUTU\n`play` suivi d'un lien youtube pour que je chante la musique de ton choix\n`help` Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur \n`heberger` Pour savoir sur quel hébergeur je suis héberger en ce moment!\n`restart` Pour que je redémarre. *seul le propriétaire de elbot peut executer cettte commande\n`github`Pour voir mon repo github\n`version` Pour connaitre sur quelle version je tourne en ce moment\n`ping` Pour connaitre mon ping."
           )
           .setColor("BLURPLE")
           .setFooter("(En plus si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà")
@@ -532,6 +532,13 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
       message.channel.send("Je suis Siri votre assistant personnel ", {
         tts: true
       });
+
+      if (user.author (command === "restart")){
+        message.channel.send("je redémarre tkt")
+        client.destroy().then(() => {
+        client.login(process.env.TOKEN).then(message.channel.send("C'est bon bah"))
+        });
+        }
 
   if (command === "ping") {
     if (message.author.bot === true) return;
