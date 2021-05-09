@@ -529,11 +529,14 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
     }
 
     if(command === "restart"){
-      message.channel.send("je redémarre tkt")
-      client.destroy().then(() => {
-      client.login(process.env.TOKEN).then(message.channel.send("C'est bon bah"))
-      });
-      }
+      message.channel.send("Je redémarre att 2s").then(msg => {
+      console.log("Y'a " + message.author.tag + " qui veut me faire redémarrer.. bon bah j'obéis.")
+      client.destroy()
+        setTimeout(() => {
+          client.login(process.env.TOKEN)
+        }, 5000)
+      })
+    }
 
     if (message.content.toLowerCase().startsWith("siri"))
       message.channel.send("Je suis Siri votre assistant personnel ", {
