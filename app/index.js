@@ -484,7 +484,7 @@ message.channel.send(embed);
           .setDescription(
 
 
-            "`pessi`:Pour connaitre tous les mots de pessis \n`brique` pour que je chante TUTITITUTU\n`play` suivi d'un lien youtube pour que je chante la musique de ton choix\n`help`: Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur \n`heberger` Pour savoir sur quel hébergeur je suis héberger en ce moment!\n`version` Pour connaitre sur quelle version je tourne en ce moment\n`ping` Pour connaitre mon ping."
+            "`pessi`:Pour connaitre tous les mots de pessis \n`brique` pour que je chante TUTITITUTU\n`play` suivi d'un lien youtube pour que je chante la musique de ton choix\n`help`: Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur \n`heberger` Pour savoir sur quel hébergeur je suis héberger en ce moment!\n`github`Pour voir mon repo github\n`version` Pour connaitre sur quelle version je tourne en ce moment\n`ping` Pour connaitre mon ping."
           )
           .setColor("BLURPLE")
           .setFooter("(En plus si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà")
