@@ -528,18 +528,19 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
       message.channel.send(embed);
     }
 
+    if(command === "restart"){
+      if (message.author.bot === true) return;
+      message.channel.send("je redémarre tkt")
+      client.destroy().then(() => {
+      client.login(process.env.TOKEN).then(message.channel.send("C'est bon bah"))
+      });
+      }
+
+
     if (message.content.toLowerCase().startsWith("siri"))
       message.channel.send("Je suis Siri votre assistant personnel ", {
         tts: true
       });
-
-      if (command === "restart")
-       if (message.author.bot === true)
-        message.channel.send("je redémarre tkt")
-        client.destroy().then(() => {
-        client.login(process.env.TOKEN).then(message.channel.send("C'est bon bah"))
-        });
-        
 
   if (command === "ping") {
     if (message.author.bot === true) return;
