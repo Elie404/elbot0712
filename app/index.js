@@ -94,7 +94,7 @@ async function execute(message, serverQueue) {
 }
 
 function skip(message, serverQueue) {
-        if (!message.member.voice.channel) // on vérifie que l'utilisateur est bien dans un salon vocal pour skip
+    if (!message.member.voice.channel) // on vérifie que l'utilisateur est bien dans un salon vocal pour skip
         {
                 return message.channel.send(
                     "Vous devez être dans un salon vocal pour passer une musique!"
