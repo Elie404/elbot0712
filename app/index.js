@@ -42,7 +42,7 @@ if (typeof window !== "undefined") {
 } else {
     Database = require("easy-json-database");
 }
-const delay = (ms) => new Promise((resolve) => setTimeout(() => resolve(), ms));
+
 const s4d = {
     Discord,
     client: null,
