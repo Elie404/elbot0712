@@ -8,6 +8,8 @@ const manager = new ReactionRoleManager(client, {
   storage: "./reaction-role.json"
 });
 
+require('dotenv').config();
+
 // NOUVEAU
 const queue = new Map();
 
