@@ -48,10 +48,7 @@ function mathRandomInt(a, b) {
 }
 
 
-s4d.client.login(process.env.TOKEN).catch((e) => {
-    s4d.tokenInvalid = true;
-    s4d.tokenError = e;
-});
+
 
 s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!number') {
@@ -71,11 +68,12 @@ s4d.client.on('message', async (s4dmessage) => {
                         dynamic: true
                     }))
                 },
-                description: (['', '\n', 'Nom du seveur:', (s4dmessage.guild).name, '\n', 'Nombre de personnes sur ce serveur', (s4dmessage.guild).memberCount, '\n', (s4dmessage.guild).owner || await (s4dmessage.guild).members.fetch((s4dmessage.guild).ownerID), 'Propriétaire de ce serveur', '\n', (s4dmessage.guild).premiumTier, ''].join(''))
+                description: (['Nom du seveur:', (s4dmessage.guild).name, '\n', 'Nombre de personnes sur ce serveur', (s4dmessage.guild).memberCount, '\n', (s4dmessage.guild).owner || await (s4dmessage.guild).members.fetch((s4dmessage.guild).ownerID), 'Propriétaire de ce serveur', '\n', (s4dmessage.guild).premiumTier, '\n'].join(''))
             }
         });
     }
 
 });
+s4d.client.login(process.env.TOKEN)
 
 s4d;
