@@ -48,7 +48,7 @@ function mathRandomInt(a, b) {
 }
 
 
-s4dclient.login(process.env.TOKEN);
+s4d.client.login(process.env.TOKEN);
 
 s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!number') {
