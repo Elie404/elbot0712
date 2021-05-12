@@ -475,14 +475,6 @@ var embed = new Discord.MessageEmbed()
 message.channel.send(embed);
 
 
-if (message.content === prefix + "restart") {
-  if(!message.content.startsWith(prefix)) return;
-      message.channel.send("Je rédemarre tkt").then(msg => {
-      client.destroy()
-      process.exit()
-      })
-    }
-
     if (command === "uno")
       message.channel.send(
         "https://tenor.com/view/nou-no-you-uno-uno-reverse-gif-21173861"
