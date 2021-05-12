@@ -42,7 +42,7 @@ if (typeof window !== "undefined") {
 } else {
     Database = require("easy-json-database");
 }
-
+const delay = (ms) => new Promise((resolve) => setTimeout(() => resolve(), ms));
 const s4d = {
     Discord,
     client: null,
@@ -55,7 +55,9 @@ const s4d = {
         if (!s4d.client.readyTimestamp) throw new Error('You cannot perform message operations while the bot is not connected to the Discord API')
     }
 };
-
+s4d.client = new s4d.Discord.Client({
+    fetchAllMembers: true
+});
 s4d.client.on('raw', async (packet) => {
     if (['MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE'].includes(packet.t)) {
         const guild = s4d.client.guilds.cache.get(packet.d.guild_id);
@@ -79,6 +81,12 @@ function mathRandomInt(a, b) {
     }
     return Math.floor(Math.random() * (b - a + 1) + a);
 }
+
+
+s4d.client.login(process.env.TOKEN).catch((e) => {
+    s4d.tokenInvalid = true;
+    s4d.tokenError = e;
+});
 
 s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'Pain au chocolat ou chocolatine') {
