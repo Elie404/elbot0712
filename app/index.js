@@ -552,7 +552,6 @@ if (typeof window !== "undefined") {
     Discord = DiscordJS;
     Database = EasyDatabase;
 } else {
-    Discord = require("discord.js");
     Database = require("easy-json-database");
 }
 const delay = (ms) => new Promise((resolve) => setTimeout(() => resolve(), ms));
