@@ -547,7 +547,6 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
     }
 });
 
-let Discord;
 let Database;
 if (typeof window !== "undefined") {
     Discord = DiscordJS;
