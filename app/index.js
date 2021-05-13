@@ -629,14 +629,6 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
   });
 
 
-  s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!restart' && (s4dmessage.author.id) == '727572859727380531') {
-        s4dmessage.channel.send("Je redémarre tkt");
-    } else if ((s4dmessage.author.id) == '670753544416264195') {
-        s4dmessage.channel.send('NAN JE REDÉMARRE PAS SALE ARABE ');
-    }
-
-});
 
     if (message.content.toLowerCase().startsWith("siri"))
       message.channel.send("Je suis Siri votre assistant personnel ", {
