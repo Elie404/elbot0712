@@ -577,7 +577,7 @@ message.channel.send(embed);
           .setDescription(
 
 
-            "`pessi` Pour connaitre tous les mots de pessis \n`help` Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur\n`serverinfo` Pour connaitre toutes les informations sur ce serveur\n`number` Pour avoir un chiffre aléatoire entre 0 et 100.\n`heberger` Pour savoir sur quel hébergeur je suis héberger en ce moment!\n`restart` Pour que je redémarre. *en ce moment cette commande est HS*\n`github` Pour voir mon repo github\n`version` Pour connaitre sur quelle version je tourne en ce moment\n`ping` Pour connaitre mon ping. \n**COMMANDE MUSIQUE**\n`brique` pour que je chante TUTITITUTU \n`play` suivi d'un lien youtube pour que je chante la musique de ton choix \n`stop` Pour que j'arrête de chanter"
+            "`pessi` Pour connaitre tous les mots de pessis \n`help` Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur\n`sondage` Pour faire un sondage \n`serverinfo` Pour connaitre toutes les informations sur ce serveur\n`number` Pour avoir un chiffre aléatoire entre 0 et 100.\n`heberger` Pour savoir sur quel hébergeur je suis héberger en ce moment!\n`restart` Pour que je redémarre. *en ce moment cette commande est HS*\n`github` Pour voir mon repo github\n`version` Pour connaitre sur quelle version je tourne en ce moment\n`ping` Pour connaitre mon ping. \n**COMMANDE MUSIQUE**\n`brique` pour que je chante TUTITITUTU \n`play` suivi d'un lien youtube pour que je chante la musique de ton choix \n`stop` Pour que j'arrête de chanter"
           )
           .setColor("BLURPLE")
           .setFooter("(En plus si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà")
@@ -627,7 +627,19 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
       }
   
   });
-  
+
+  s4d.client.on('message', async (s4dmessage) => {
+    if ((s4dmessage.content) == 'e!restart' && (s4dmessage.author.id) == '727572859727380531') {
+        s4dmessage.channel.send(String('Je redémarre tkt'));
+    } else if ((s4dmessage.author.id) == '670753544416264195') {
+        s4dmessage.channel.send(String('NAN JE REDÉMARRE PAS SALE ARABE '));
+    } else {
+        s4dmessage.channel.send(String('NAN JE REDÉMARRE PAS'));
+    }
+
+});
+
+
     if (message.content.toLowerCase().startsWith("siri"))
       message.channel.send("Je suis Siri votre assistant personnel ", {
         tts: true
