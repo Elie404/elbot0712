@@ -629,6 +629,7 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
   });
 
 
+  
 
     if (message.content.toLowerCase().startsWith("siri"))
       message.channel.send("Je suis Siri votre assistant personnel ", {
