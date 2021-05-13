@@ -403,9 +403,7 @@ client.on("message", message => {
       role: message.guild.roles.cache.get("836998154930225202")
     });
   }
-
-  if (message.content.startsWith(prefix))
-    message.react(":elbot:817423861158510633");
+ 
 
   if (message.content.startsWith("elbot"))
     message.react(":elbot:817423861158510633");
@@ -592,6 +590,18 @@ message.channel.send(embed);
         }
     
     });
+
+    s4d.client.on('message', async (s4dmessage) => {
+      if (((s4dmessage.content) || '').startsWith('e!' || '')) {
+          s4dmessage.react(':elbot:817423861158510633');
+      } else if (((s4dmessage.content) || '').startsWith('e!sondage' || '')) {
+          s4dmessage.react('👍');
+          s4dmessage.react('👎');
+          s4dmessage.react('✋');
+      }
+  
+  });
+  
     if (command === "test")
       message.channel.send("Y'a quoi zbi? Sinon moi je fonctionne.");
 
