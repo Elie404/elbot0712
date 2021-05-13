@@ -584,7 +584,14 @@ message.channel.send(embed);
         message.channel.send(embed);
         
       }
-
+      s4d.client.on('message', async (s4dmessage) => {
+        if (((s4dmessage.content) || '').startsWith('e!sondage' || '')) {
+            s4dmessage.react('👍');
+            s4dmessage.react('👎');
+            s4dmessage.react('✋');
+        }
+    
+    });
     if (command === "test")
       message.channel.send("Y'a quoi zbi? Sinon moi je fonctionne.");
 
