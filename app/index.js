@@ -593,7 +593,7 @@ message.channel.send(embed);
 
     s4d.client.on('message', async (s4dmessage) => {
       if (((s4dmessage.content) || '').startsWith('e!')) {
-          s4dmessage.react(":elbot:817423861158510633");
+          s4dmessage.react(':elbot:817423861158510633');
       } else if (((s4dmessage.content) || '').startsWith('e!sondage')) {
           s4dmessage.react('👍');
           s4dmessage.react('👎');
