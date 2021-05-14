@@ -549,13 +549,13 @@ if (message.content.startsWith("Nice"))
 
     
       if (message.content === "e!say"){
-      var contenu = args.join(" ");
-      if (!contenu)
-        return message.channel.send("T'es con ou quoi? **ECRIT FRÈRE**");
-      message.channel.send(contenu);
-      message.delete().catch();
+        if(!message.content.startsWith(prefix)) return;
+        var contenu = args.join(" ");
+        if (!contenu)
+          return message.channel.send("T'es con ou quoi? **ECRIT FRÈRE**");
+        message.channel.send(contenu);
+        message.delete().catch();
     }
-    
     if (message.content === "e!twitter")
 var embed = new Discord.MessageEmbed()
 .setTitle("**VOICI LE TWITTER PRINCIPAL DU SERVEUR CHANGEZ POUR UBUNTU**")
