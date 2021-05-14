@@ -445,12 +445,15 @@ client.on("message", message => {
 
   if (message.content.startsWith("bon")) message.channel.send("BONBON :candy:");
  
-  s4d.client.on('message', async (s4dmessage) => {
-    if (((s4dmessage.content) || '').startsWith('**Profil de el2zay#0364**' || '')) {
+
+s4d.client.on('message', async (s4dmessage) => {
+    if (String((s4dmessage.content)).includes(String('Profil de el2zay#0364'))) {
         s4dmessage.delete();
     }
 
 });
+
+
   if (message.content.startsWith("tutititutu"))
     message.react(":Brique_telecom:808798700142460970");
 
