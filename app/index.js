@@ -119,6 +119,23 @@ s4d.client.on('message', async (s4dmessage) => {
     }
 
 });
+s4d.client.on('message', async (s4dmessage) => {
+  if ((s4dmessage.content) == 'e!infoserver') {
+      s4dmessage.channel.send({
+          embed: {
+              title: 'Voici les informations sur ce serveur',
+              color: '#33ffff',
+              image: {
+                  url: ((s4dmessage.guild).iconURL({
+                      dynamic: true
+                  }))
+              },
+              description: (['', '**Nom du seveur:**', '\n', (s4dmessage.guild).name, '\n', '**Nombre de personnes sur ce serveur:**', '\n', (s4dmessage.guild).memberCount, '\n', '**Propriétaire de ce serveur:**', '\n', (s4dmessage.guild).owner || await (s4dmessage.guild).members.fetch((s4dmessage.guild).ownerID), '\n', '**Niveau de boost sur ce serveur:**', '\n', (s4dmessage.guild).premiumTier].join(''))
+          }
+      });
+  }
+
+});
 
 '\n';
 
@@ -577,7 +594,7 @@ if (message.content === "e!uno")
           .setDescription(
 
 
-            "`pessi` Pour connaitre tous les mots de pessis \n`help` Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur\n`sondage` Pour faire un sondage \n`serverinfo` Pour connaitre toutes les informations sur ce serveur\n`number` Pour avoir un chiffre aléatoire entre 0 et 100.\n`heberger` Pour savoir sur quel hébergeur je suis héberger en ce moment!\n`restart` Pour que je redémarre. *en ce moment cette commande est HS*\n`github` Pour voir mon repo github\n`version` Pour connaitre sur quelle version je tourne en ce moment\n`ping` Pour connaitre mon ping. \n**COMMANDE MUSIQUE**\n`brique` pour que je chante TUTITITUTU \n`play` suivi d'un lien youtube pour que je chante la musique de ton choix \n`stop` Pour que j'arrête de chanter"
+            "`pessi` Pour connaitre tous les mots de pessis \n`help` Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur\n`sondage` Pour faire un sondage \n`serverinfo` / `serverinfo` Pour connaitre toutes les informations sur ce serveur\n`number` Pour avoir un chiffre aléatoire entre 0 et 100.\n`heberger` Pour savoir sur quel hébergeur je suis héberger en ce moment!\n`restart` Pour que je redémarre. *en ce moment cette commande est HS*\n`github` Pour voir mon repo github\n`version` Pour connaitre sur quelle version je tourne en ce moment\n`ping` Pour connaitre mon ping. \n**COMMANDE MUSIQUE**\n`brique` pour que je chante TUTITITUTU \n`play` suivi d'un lien youtube pour que je chante la musique de ton choix \n`stop` Pour que j'arrête de chanter"
           )
           .setColor("BLURPLE")
           .setFooter("(En plus si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà")
