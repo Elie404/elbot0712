@@ -282,7 +282,7 @@ client.on("message", message => {
     .split(/ +/);
   const command = args.shift().toLowerCase();
 
-  if (command === "reaction") {
+  if (message.content === "e!reaction") {
     if (
       message.author.id !== "277825082334773251" &&
       message.author.id !== "727572859727380531"
@@ -548,7 +548,7 @@ if (message.content.startsWith("Nice"))
       message.channel.send("Devant le pc entrain de se br****");
 
     
-    if (command === "say") {
+      if (message.content === "e!say"){
       var contenu = args.join(" ");
       if (!contenu)
         return message.channel.send("T'es con ou quoi? **ECRIT FRÈRE**");
@@ -556,7 +556,7 @@ if (message.content.startsWith("Nice"))
       message.delete().catch();
     }
     
-if (command === "twitter")
+    if (message.content === "e!twitter")
 var embed = new Discord.MessageEmbed()
 .setTitle("**VOICI LE TWITTER PRINCIPAL DU SERVEUR CHANGEZ POUR UBUNTU**")
 .setDescription(
@@ -566,12 +566,12 @@ var embed = new Discord.MessageEmbed()
 message.channel.send(embed);
 
 
-    if (command === "uno")
+if (message.content === "e!uno")
       message.channel.send(
         "https://tenor.com/view/nou-no-you-uno-uno-reverse-gif-21173861"
       );
 
-      if (command === "help") {
+      if (message.content === "e!help") {
         var embed = new Discord.MessageEmbed()
           .setTitle("**VOICI TOUTES LES COMMANDES DE ELBOT**")
           .setDescription(
@@ -585,31 +585,31 @@ message.channel.send(embed);
         
       }
 
-    if (command === "test")
+    if (message.content === "e!test")
       message.channel.send("Y'a quoi zbi? Sinon moi je fonctionne.");
 
-    if (command === "brique") {
+      if (message.content === "e!brique"){
       play();
       message.channel.send("let's go :bricks:");
     }
 
-    if (command === "version")
+    if (message.content === "e!version")
     message.channel.send ("En ce moment je tourne sur la version 1.1.0")
 
-if (command === "heberger")
+    if (message.content === "e!heberger")
 message.channel.send("Je suis en ce moment héberger sur Heroku!")
 
-if (command === "github")
+if (message.content === "e!github")
 message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
 
-    if (command === "invite") {
+if (message.content === "e!invite") {
       message.channel.send(
         "https://discord.com/api/oauth2/authorize?client_id=809344905674489866&permissions=3152128&scope=bot"
       );
     }
 
   
-    if (command === "pessi") {
+    if (message.content === "e!pessi") {
       var embed = new Discord.MessageEmbed()
         .setTitle("**LES MOTS DES PESSI**")
         .setDescription(
@@ -636,7 +636,7 @@ message.channel.send("Voici le lien de mon Github\nhttps://bit.ly/33sfsMv")
         tts: true
       });
 
-  if (command === "ping") {
+      if (message.content === "e!ping") {
     if (message.author.bot === true) return;
     message.channel.send(
       "Le ping pong c'est de la merde je préfère utiliser des briques comme raquettes mais en tout cas j'ai " +
