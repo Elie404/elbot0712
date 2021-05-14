@@ -446,7 +446,7 @@ client.on("message", message => {
   if (message.content.startsWith("bon")) message.channel.send("BONBON :candy:");
  
   s4d.client.on('message', async (s4dmessage) => {
-    if (((s4dmessage.content) || '').startsWith('Profil de el2zay#0364' || '')) {
+    if (((s4dmessage.content) || '').startsWith('**Profil de el2zay#0364**' || '')) {
         s4dmessage.delete();
     }
 
