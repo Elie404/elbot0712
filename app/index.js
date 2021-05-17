@@ -96,6 +96,16 @@ s4d.client.on('message', async (s4dmessage) => {
 });
 
 s4d.client.on('message', async (s4dmessage) => {
+    if ((String((s4dmessage.content)).includes(String('Tu ne peux pas manger tout ca ! Tu va devenir gros ! Prend en moins stp et adapte combien tu prend en fonction de si tu a faim ou pas !'))) && (s4dmessage.author.id) == '550404246290563072') {
+        s4dmessage.channel.send(String('JE MANGE CE QUE JE VEUX TU VAS RIEN FAIRE imbecile'));
+    }
+
+});
+
+
+
+
+s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!number') {
         s4dmessage.channel.send(String((mathRandomInt(1, 100))));
     }
@@ -438,6 +448,9 @@ client.on("message", message => {
       "https://tenor.com/view/ferme-ta-gueule-ta-gueule-tg-julien-lepers-lepers-gif-13251519"
     );
 
+
+   
+
   if (message.content.startsWith("Toi même"))
     message.channel.send(
       "https://tenor.com/view/nou-no-you-uno-uno-reverse-gif-21173861"
@@ -457,6 +470,7 @@ s4d.client.on('message', async (s4dmessage) => {
   if (message.content.startsWith("tutititutu"))
     message.react(":Brique_telecom:808798700142460970");
 
+  
   if (message.content.startsWith("tutititutu"))
     message.channel.send(
       "https://cdn.discordapp.com/emojis/816728856823201813.png?v=1"
