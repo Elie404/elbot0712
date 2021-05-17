@@ -465,12 +465,8 @@ s4d.client.on('message', async (s4dmessage) => {
   if (message.content.toLowerCase().includes("crotte"))
     message.react("<:bassinechrotte:816630077038264321>");
     
-    s4d.client.on('message', async (s4dmessage) => {
-      if ((String((s4dmessage.content)).includes(String('Tu ne peux pas manger tout ca ! Tu va devenir gros ! Prend en moins stp et adapte combien tu prend en fonction de si tu a faim ou pas !'))) && (s4dmessage.author.id) == '550404246290563072') {
-          s4dmessage.channel.send(String('JE MANGE CE QUE JE VEUX TU VAS RIEN FAIRE imbecile'));
-      }
+    
   
-  })
   if (message.content.toLowerCase().includes("crotte"))
     message.react("💩");  
   
