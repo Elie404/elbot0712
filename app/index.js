@@ -451,7 +451,13 @@ client.on("message", message => {
 
   if (message.content.toLowerCase().includes("ubuntu"))
     message.react(":ubuntu_dans_bassine:819657844940472421");
-
+    
+    s4d.client.on('message', async (s4dmessage) => {
+      if ((String((s4dmessage.content)).includes(String('Tu ne peux pas manger tout ca ! Tu va devenir gros ! Prend en moins stp et adapte combien tu prend en fonction de si tu a faim ou pas !'))) && (s4dmessage.author.id) == '550404246290563072') {
+          s4dmessage.channel.send(String('JE MANGE CE QUE JE VEUX TU VAS RIEN FAIRE imbecile'));
+      }
+  
+  });
 
   if (message.content.toLowerCase().includes("merde"))
     message.react("<:bassinechrotte:816630077038264321>");
@@ -671,8 +677,17 @@ if (message.content === "e!invite") {
   
   });
 
-
-  
+  s4d.client.on('message', async (s4dmessage) => {
+    if ((s4dmessage.content) == 'e!restart' && (s4dmessage.author.id) == '727572859727380531') {
+        s4dmessage.channel.send(String('Je redémarre tkt'));
+    } else if ((s4dmessage.author.id) == '670753544416264195') {
+        s4dmessage.channel.send(String('NAN JE REDÉMARRE PAS SALE ARABE '));
+    } else if ((s4dmessage.author.id) != '727572859727380531' || (s4dmessage.author.id) != '670753544416264195') {
+        s4dmessage.channel.send(String('NAN JE REDÉMARRE PAS'));
+    }client.destroy()
+    process.exit()
+    });
+ 
 
     if (message.content.toLowerCase().startsWith("siri"))
       message.channel.send("Je suis Siri votre assistant personnel ", {
