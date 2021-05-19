@@ -101,7 +101,7 @@ s4d.client.on('message', async (s4dmessage) => {
     }
 
 });
-
+{
 s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!serverinfo') {
         s4dmessage.channel.send({
@@ -123,7 +123,7 @@ s4d.client.on('message', async (s4dmessage) => {
 '\n';
 
 s4d;
-
+}
 if (message.content === ("e!infouser") )
 const { MessageEmbed } = require("discord.js");
 const moment = require("moment");
