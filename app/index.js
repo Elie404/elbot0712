@@ -42,19 +42,6 @@ if (typeof window !== "undefined") {
 } else {
     Database = require("easy-json-database");
 }
-const delay = (ms) => new Promise((resolve) => setTimeout(() => resolve(), ms));
-const s4d = {
-    Discord,
-    client: null,
-    tokenInvalid: false,
-    reply: null,
-    joiningMember: null,
-    database: new Database("./db.json"),
-    checkMessageExists() {
-        if (!s4d.client) throw new Error('You cannot perform message operations without a Discord.js client')
-        if (!s4d.client.readyTimestamp) throw new Error('You cannot perform message operations while the bot is not connected to the Discord API')
-    }
-};
 s4d.client = new s4d.Discord.Client({
     fetchAllMembers: true
 });
