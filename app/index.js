@@ -42,9 +42,6 @@ if (typeof window !== "undefined") {
 } else {
     Database = require("easy-json-database");
 }
-s4d.client = new s4d.Discord.Client({
-    fetchAllMembers: true
-});
 s4d.client.on('raw', async (packet) => {
     if (['MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE'].includes(packet.t)) {
         const guild = s4d.client.guilds.cache.get(packet.d.guild_id);
