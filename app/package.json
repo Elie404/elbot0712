@@ -16,7 +16,8 @@
       "ffmpeg-static": "latest",
       "node-opus": "latest",
       "@discordjs/opus": "latest",
-      "ytdl-core": "latest"
+      "ytdl-core": "latest",
+      "dotenv": "latest"
     },
     "engines": {
       "node": "12.x"
