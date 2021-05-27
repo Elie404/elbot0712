@@ -2,13 +2,12 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const fetch = require("node-fetch");
 var prefix = "e!";
-const ytdl = require('ytdl-core');
 const ReactionRoleManager = require("discord-reaction-role");
 const manager = new ReactionRoleManager(client, {
   storage: "./reaction-role.json"
 });
+client.reactionRoleManager = manager;
 
-require('dotenv').config();
 
 // NOUVEAU
 const queue = new Map();
@@ -41,36 +40,6 @@ if (typeof window !== "undefined") {
     Database = EasyDatabase;
 } else {
     Database = require("easy-json-database");
-}
-const delay = (ms) => new Promise((resolve) => setTimeout(() => resolve(), ms));
-const s4d = {
-    Discord,
-    client: null,
-    tokenInvalid: false,
-    reply: null,
-    joiningMember: null,
-    database: new Database("./db.json"),
-    checkMessageExists() {
-        if (!s4d.client) throw new Error('You cannot perform message operations without a Discord.js client')
-        if (!s4d.client.readyTimestamp) throw new Error('You cannot perform message operations while the bot is not connected to the Discord API')
-    }
-};
-s4d.client = new s4d.Discord.Client({
-    fetchAllMembers: true
-});
-s4d.client.on('raw', async (packet) => {
-    if (['MESSAGE_REACTION_ADD', 'MESSAGE_REACTION_REMOVE'].includes(packet.t)) {
-        const guild = s4d.client.guilds.cache.get(packet.d.guild_id);
-        if (!guild) return;
-        const member = guild.members.cache.get(packet.d.user_id) || guild.members.fetch(d.user_id).catch(() => {});
-        if (!member) return;
-        const channel = s4d.client.channels.cache.get(packet.d.channel_id);
-        if (!channel) return;
-        const message = channel.messages.cache.get(packet.d.message_id) || await channel.messages.fetch(packet.d.message_id).catch(() => {});
-        if (!message) return;
-        s4d.client.emit(packet.t, guild, channel, message, member, packet.d.emoji.name);
-    }
-});
 
 function mathRandomInt(a, b) {
     if (a > b) {
@@ -83,47 +52,6 @@ function mathRandomInt(a, b) {
 }
 
 
-s4d.client.login(process.env.TOKEN).catch((e) => {
-    s4d.tokenInvalid = true;
-    s4d.tokenError = e;
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'Pain au chocolat ou chocolatine') {
-        s4dmessage.channel.send(String('TG ON EST PLUS EN 2016 PTN'));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!number') {
-        s4dmessage.channel.send(String((mathRandomInt(1, 100))));
-    }
-
-});
-{
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!serverinfo') {
-        s4dmessage.channel.send({
-            embed: {
-                title: 'Voici les informations sur ce serveur',
-                color: '#33ffff',
-                image: {
-                    url: ((s4dmessage.guild).iconURL({
-                        dynamic: true
-                    }))
-                },
-                description: (['', '**Nom du seveur:**', '\n', (s4dmessage.guild).name, '\n', '**Nombre de personnes sur ce serveur:**', '\n', (s4dmessage.guild).memberCount, '\n', '**Propriétaire de ce serveur:**', '\n', (s4dmessage.guild).owner || await (s4dmessage.guild).members.fetch((s4dmessage.guild).ownerID), '\n', '**Niveau de boost sur ce serveur:**', '\n', (s4dmessage.guild).premiumTier].join(''))
-            }
-        });
-    }
-
-});
-
-'\n';
-
-s4d;
-}
 
 
 async function execute(message, serverQueue) {
@@ -422,14 +350,7 @@ client.on("message", message => {
 
   if (message.content.toLowerCase().includes("ubuntu"))
     message.react(":ubuntu_dans_bassine:819657844940472421");
-    
-    s4d.client.on('message', async (s4dmessage) => {
-      if ((String((s4dmessage.content)).includes(String('Tu ne peux pas manger tout ca ! Tu va devenir gros ! Prend en moins stp et adapte combien tu prend en fonction de si tu a faim ou pas !'))) && (s4dmessage.author.id) == '550404246290563072') {
-          s4dmessage.channel.send(String('JE MANGE CE QUE JE VEUX TU VAS RIEN FAIRE imbecile'));
-      }
-  
-  });
-
+   
   if (message.content.toLowerCase().includes("merde"))
     message.react("<:bassinechrotte:816630077038264321>");
  
@@ -454,12 +375,7 @@ client.on("message", message => {
   if (message.content.startsWith("bon")) message.channel.send("BONBON :candy:");
  
 
-s4d.client.on('message', async (s4dmessage) => {
-    if (String((s4dmessage.content)).includes(String('Profil de el2zay#0364'))) {
-        s4dmessage.delete();
-    }
 
-});
 
 
   if (message.content.startsWith("tutititutu"))
@@ -639,25 +555,7 @@ if (message.content === "e!invite") {
       message.channel.send(embed);
     }
 
-    s4d.client.on('message', async (s4dmessage) => {
-      if (((s4dmessage.content) || '').startsWith('e!sondage' || '')) {
-          s4dmessage.react('👍');
-          s4dmessage.react('👎');
-          s4dmessage.react('✋');
-      }
-  
-  });
-
-  s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!restart' && (s4dmessage.author.id) == '727572859727380531') {
-        s4dmessage.channel.send(String('Je redémarre tkt'));
-    } else if ((s4dmessage.author.id) == '670753544416264195') {
-        s4dmessage.channel.send(String('NAN JE REDÉMARRE PAS SALE ARABE '));
-    } else if ((s4dmessage.author.id) != '727572859727380531' || (s4dmessage.author.id) != '670753544416264195') {
-        s4dmessage.channel.send(String('NAN JE REDÉMARRE PAS'));
-    }client.destroy()
-    process.exit()
-    });
+ 
  
 
     if (message.content.toLowerCase().startsWith("siri"))
@@ -677,4 +575,4 @@ if (message.content === "e!invite") {
 });
 
 
-client.login(process.env.TOKEN);
+client.login(process.env.TOKEN)};
