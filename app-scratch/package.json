@@ -13,7 +13,8 @@
     "node-fetch": "^2.6.1",
     "opusscript": "^0.0.8",
     "discord-reaction-role": "^2.0.0",
-    "ytdl-core": "lastest"
+    "ytdl-core": "lastest",
+"dotenv": "lastest"
   },
   "engines": {
     "node": "12.x"
