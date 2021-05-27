@@ -37,7 +37,6 @@ s4d.client.on('raw', async (packet) => {
     }
 });
 var dotenv = require('dotenv')
-
 function colourRandom() {
     var num = Math.floor(Math.random() * Math.pow(2, 24));
     return '#' + ('00000' + num.toString(16)).substr(-6);
@@ -58,7 +57,7 @@ s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!ping' || (s4dmessage.content) == 'e!infobot') {
         s4dmessage.channel.send({
             embed: {
-                title: 'Ping+ Info du bot',
+                title: 'Ping + Info du bot',
                 color: (colourRandom()),
                 image: {
                     url: null
@@ -80,14 +79,14 @@ s4d.client.on('message', async (s4dmessage) => {
 
 s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('702539839626674277'))) {
-        s4dmessage.channel.send(String((['Le nombre de message sur le serveur Omega est de ', s4d.database.get(String('message-ac')), 'messages'].join(''))));
+        s4dmessage.channel.send(String((['Le nombre de message sur le serveur Anti Coupable est de ', s4d.database.get(String('message-ac')), ' messages depuis le 27 mai '].join(''))));
     }
 
 });
 
 s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('808417100128583690'))) {
-        s4dmessage.channel.send(String((['Le nombre de message sur le serveur Ubuntu est de ', s4d.database.get(String('message-ubuntu')), 'messages'].join(''))));
+        s4dmessage.channel.send(String((['Le nombre de message sur le serveur Ubuntu est de ', s4d.database.get(String('message-ubuntu')), ' messages depuis le 27 mai '].join(''))));
     }
 
 });
@@ -113,7 +112,7 @@ s4d.client.on('message', async (s4dmessage) => {
 
 s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('390909164354011136'))) {
-        s4dmessage.channel.send(String((['Le nombre de message sur le serveur Omega est de ', s4d.database.get(String('message-omega')), 'messages'].join(''))));
+        s4dmessage.channel.send(String((['Le nombre de message sur le serveur Omega est de ', s4d.database.get(String('message-omega')), ' messages depuis le 27 mai '].join(''))));
     }
 
 });
@@ -172,7 +171,7 @@ s4d.client.on('message', async (s4dmessage) => {
                     url: null
                 },
 
-                description: ([':', '\n', 'Nom du seveur:', (s4dmessage.guild).name, '\n', 'Nombre de personnes sur ce serveur', (s4dmessage.guild).memberCount, '\n', (s4dmessage.guild).owner || await (s4dmessage.guild).members.fetch((s4dmessage.guild).ownerID), 'Propriétaire de ce serveur', '\n', (s4dmessage.guild).premiumTier, '\n'].join('')),
+                description: (['\n', 'Nom du seveur: ', (s4dmessage.guild).name, '\n', 'Nombre de personnes sur ce serveur: ', (s4dmessage.guild).memberCount, '\n', 'Propriétaire de ce serveur: ', (s4dmessage.guild).owner || await (s4dmessage.guild).members.fetch((s4dmessage.guild).ownerID), '\n', 'Niveau de boost: ', (s4dmessage.guild).premiumTier, '\n'].join('')),
                 footer: {
                     text: null
                 },
