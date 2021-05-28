@@ -20,6 +20,7 @@ const s4d = {
         if (!s4d.client.readyTimestamp) throw new Error('You cannot perform message operations while the bot is not connected to the Discord API')
     }
 };
+
 s4d.client = new s4d.Discord.Client({
     fetchAllMembers: true
 });
@@ -36,13 +37,11 @@ s4d.client.on('raw', async (packet) => {
         s4d.client.emit(packet.t, guild, channel, message, member, packet.d.emoji.name);
     }
 });
-var dotenv = require('dotenv');
-const e = require("express");
+var dotenv = require('dotenv') 
 function colourRandom() {
     var num = Math.floor(Math.random() * Math.pow(2, 24));
     return '#' + ('00000' + num.toString(16)).substr(-6);
 }
-process.setMaxListeners(11);
 
 function mathRandomInt(a, b) {
     if (a > b) {
@@ -121,21 +120,28 @@ s4d.client.on('message', async (s4dmessage) => {
 
 });
 
+s4d.client.on('message', async (s4dmessage) => {
+    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('823284578386837504'))) {
+        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-ubuntu')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
+    }
+
+});
+
 s4d.client.login(process.env.TOKEN).catch((e) => {
     s4d.tokenInvalid = true;
     s4d.tokenError = e;
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('823284578386837504'))) {
-        s4dmessage.channel.send(String((String(s4d.database.get(String('message-ubuntu'))) + ' depuis le 28 mai!')));
+    if (((s4dmessage.content) || '').startsWith('**Profil de el2zay#0364**' || '')) {
+        s4dmessage.delete();
     }
 
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if (((s4dmessage.content) || '').startsWith('**Profil de el2zay#0364**' || '')) {
-        s4dmessage.delete();
+    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('808417100128583690'))) {
+        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-ac')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
     }
 
 });
@@ -155,8 +161,8 @@ s4d.client.on('message', async (s4dmessage) => {
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('808417100128583690'))) {
-        s4dmessage.channel.send(String((String(s4d.database.get(String('message-ac'))) + ' depuis le 28 mai!')));
+    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('390909164354011136'))) {
+        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-omega')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
     }
 
 });
@@ -173,22 +179,15 @@ s4d.client.on('message', async (s4dmessage) => {
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('390909164354011136'))) {
-        s4dmessage.channel.send(String((String(s4d.database.get(String('message-omega'))) + ' depuis le 28 mai!')));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('829448346598768660'))) {
-        s4dmessage.channel.send(String((String(s4d.database.get(String('message-spam'))) + ' depuis le 28 mai!')));
+        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-spam')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
     }
 
 });
 
 s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('800809368727191592'))) {
-        s4dmessage.channel.send(String((String(s4d.database.get(String('message-spam'))) + ' depuis le 28 mai!')));
+        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-frite')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
     }
 
 });
@@ -221,7 +220,7 @@ s4d.client.on('message', async (s4dmessage) => {
 
 s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('823284578386837504'))) {
-        s4dmessage.channel.send(String((String(s4d.database.get(String('message-hartasia'))) + ' depuis le 28 mai!')));
+        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-hartasia')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
     }
 
 });
