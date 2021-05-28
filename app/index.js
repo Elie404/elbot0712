@@ -555,18 +555,7 @@ if (message.content === "e!invite") {
       message.channel.send(embed);
     }
 
-    if (message.content === "e!clear") {
-      if (!message.member.hasPermission('MANAGE_MESSAGES')) return message.channel.send("Vous n'avez pas les permissions");
-      if (!args[0]) return message.channel.send("Vous devez mettre un nombre de messages à supprimer");
-      if (isNan(args[0])) return message.channel.send("Le nombre de message est invalide");
-      if (parseInt(args[0]) <= 0 || parseInt(args[0]) >= 99) return message.channel.send("Le nombre de messages à supprimer doit être compris entre 1 et 99.")
-      message.channel.bulkDelete(parseInt(args[0]) + 1)
-      message.channel.send(`Vous avez supprimé ${args[1]} message(s)`).then(msg => {
-          setTimeout(() => {
-              msg.delete()
-          }, 5000);
-      });
-  }
+   
  
 
     if (message.content.toLowerCase().startsWith("siri"))
