@@ -43,6 +43,8 @@ function colourRandom() {
     return '#' + ('00000' + num.toString(16)).substr(-6);
 }
 
+emitter.setMaxListeners(10000) 
+
 function mathRandomInt(a, b) {
     if (a > b) {
         // Swap a and b to ensure a is smaller.
