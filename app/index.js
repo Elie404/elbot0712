@@ -555,7 +555,7 @@ if (message.content === "e!invite") {
       message.channel.send(embed);
     }
 
-    if (commande === "clear") {
+    if (message.content === "e!clear") {
       if (!message.member.hasPermission('MANAGE_MESSAGES')) return message.channel.send("Vous n'avez pas les permissions");
       if (!args[0]) return message.channel.send("Vous devez mettre un nombre de messages à supprimer");
       if (isNan(args[0])) return message.channel.send("Le nombre de message est invalide");
