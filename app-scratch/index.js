@@ -36,7 +36,8 @@ s4d.client.on('raw', async (packet) => {
         s4d.client.emit(packet.t, guild, channel, message, member, packet.d.emoji.name);
     }
 });
-var dotenv = require('dotenv')
+var dotenv = require('dotenv');
+const e = require("express");
 function colourRandom() {
     var num = Math.floor(Math.random() * Math.pow(2, 24));
     return '#' + ('00000' + num.toString(16)).substr(-6);
@@ -119,7 +120,7 @@ s4d.client.on('message', async (s4dmessage) => {
 
 });
 
-s4d.client.login((process.env.TOKEN).catch)((e) => {
+s4d.client.login(process.env.TOKEN).catch((e) => {
     s4d.tokenInvalid = true;
     s4d.tokenError = e;
 });
