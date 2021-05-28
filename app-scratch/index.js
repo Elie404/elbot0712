@@ -78,15 +78,15 @@ s4d.client.on('message', async (s4dmessage) => {
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('702539839626674277'))) {
-        s4dmessage.channel.send(String((['Le nombre de message sur le serveur Anti Coupable est de ', s4d.database.get(String('message-ac')), ' messages depuis le 27 mai '].join(''))));
+    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('808417100128583690'))) {
+        s4d.database.add(String('message-ubuntu'), parseInt(1));
     }
 
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('808417100128583690'))) {
-        s4dmessage.channel.send(String((['Le nombre de message sur le serveur Ubuntu est de ', s4d.database.get(String('message-ubuntu')), ' messages depuis le 27 mai '].join(''))));
+    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('829448346598768660'))) {
+        s4d.database.add(String('message-spam'), parseInt(1));
     }
 
 });
@@ -98,21 +98,16 @@ s4d.client.on('message', async (s4dmessage) => {
 
 });
 
-s4d.client.login(process.env.TOKEN).catch((e) => {
-    s4d.tokenInvalid = true;
-    s4d.tokenError = e;
-});
-
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('808417100128583690'))) {
-        s4d.database.add(String('message-ubuntu'), parseInt(1));
+    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('800809368727191592'))) {
+        s4d.database.add(String('message-frite'), parseInt(1));
     }
 
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('390909164354011136'))) {
-        s4dmessage.channel.send(String((['Le nombre de message sur le serveur Omega est de ', s4d.database.get(String('message-omega')), ' messages depuis le 27 mai '].join(''))));
+    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('823284578386837504'))) {
+        s4d.database.add(String('message-hartasia'), parseInt(1));
     }
 
 });
@@ -120,6 +115,18 @@ s4d.client.on('message', async (s4dmessage) => {
 s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('390909164354011136'))) {
         s4d.database.add(String('message-omega'), parseInt(1));
+    }
+
+});
+
+s4d.client.login(process.env.TOKEN.catch)((e) => {
+    s4d.tokenInvalid = true;
+    s4d.tokenError = e;
+});
+
+s4d.client.on('message', async (s4dmessage) => {
+    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('823284578386837504'))) {
+        s4dmessage.channel.send(String((String(s4d.database.get(String('message-ubuntu'))) + ' depuis le 28 mai!')));
     }
 
 });
@@ -145,8 +152,10 @@ s4d.client.on('message', async (s4dmessage) => {
 
 });
 
-s4d.client.on('ready', async () => {
-    s4d.client.channels.cache.get('813335285932621865').send(String('Elbot est connecté!'));
+s4d.client.on('message', async (s4dmessage) => {
+    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('808417100128583690'))) {
+        s4dmessage.channel.send(String((String(s4d.database.get(String('message-ac'))) + ' depuis le 28 mai!')));
+    }
 
 });
 
@@ -162,6 +171,27 @@ s4d.client.on('message', async (s4dmessage) => {
 });
 
 s4d.client.on('message', async (s4dmessage) => {
+    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('390909164354011136'))) {
+        s4dmessage.channel.send(String((String(s4d.database.get(String('message-omega'))) + ' depuis le 28 mai!')));
+    }
+
+});
+
+s4d.client.on('message', async (s4dmessage) => {
+    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('829448346598768660'))) {
+        s4dmessage.channel.send(String((String(s4d.database.get(String('message-spam'))) + ' depuis le 28 mai!')));
+    }
+
+});
+
+s4d.client.on('message', async (s4dmessage) => {
+    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('800809368727191592'))) {
+        s4dmessage.channel.send(String((String(s4d.database.get(String('message-spam'))) + ' depuis le 28 mai!')));
+    }
+
+});
+
+s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!infoserver') {
         s4dmessage.channel.send({
             embed: {
@@ -171,7 +201,7 @@ s4d.client.on('message', async (s4dmessage) => {
                     url: null
                 },
 
-                description: (['\n', 'Nom du seveur: ', (s4dmessage.guild).name, '\n', 'Nombre de personnes sur ce serveur: ', (s4dmessage.guild).memberCount, '\n', 'Propriétaire de ce serveur: ', (s4dmessage.guild).owner || await (s4dmessage.guild).members.fetch((s4dmessage.guild).ownerID), '\n', 'Niveau de boost: ', (s4dmessage.guild).premiumTier, '\n'].join('')),
+                description: (['', '\n', 'Nom du seveur: ', (s4dmessage.guild).name, '\n', 'Nombre de personnes sur ce serveur: ', (s4dmessage.guild).memberCount, '\n', 'Propriétaire de ce serveur: ', (s4dmessage.guild).owner || await (s4dmessage.guild).members.fetch((s4dmessage.guild).ownerID), '\n', 'Niveau de boost de ce serveur: ', (s4dmessage.guild).premiumTier, '\n'].join('')),
                 footer: {
                     text: null
                 },
@@ -183,6 +213,13 @@ s4d.client.on('message', async (s4dmessage) => {
 
             }
         });
+    }
+
+});
+
+s4d.client.on('message', async (s4dmessage) => {
+    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('823284578386837504'))) {
+        s4dmessage.channel.send(String((String(s4d.database.get(String('message-hartasia'))) + ' depuis le 28 mai!')));
     }
 
 });
