@@ -42,7 +42,7 @@ function colourRandom() {
     var num = Math.floor(Math.random() * Math.pow(2, 24));
     return '#' + ('00000' + num.toString(16)).substr(-6);
 }
-process.setMaxListeners(0);
+process.setMaxListeners(11);
 
 function mathRandomInt(a, b) {
     if (a > b) {
