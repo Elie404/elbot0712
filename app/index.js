@@ -393,7 +393,7 @@ client.on("message", message => {
     message.channel.send ("PARAPLUIIIIIIIIIIIIIIIIIIIIE @Johan")
 
     if (message.content.toLowerCase().includes("avira"))
-    message.react (":avira:848626096500768768")
+    message.react (":avira:816654625683800074")
 
   if (message.content.toLowerCase().includes("crotte"))
     message.react("💩");  
