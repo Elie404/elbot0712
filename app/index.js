@@ -389,8 +389,12 @@ client.on("message", message => {
   if (message.content.toLowerCase().includes("crotte"))
     message.react("<:bassinechrotte:816630077038264321>");
     
-    
-  
+    if (message.content.toLowerCase().includes("avira"))
+    message.send ("PARAPLUIIIIIIIIIIIIIIIIIIIIE @Johan#8021")
+
+    if (message.content.toLowerCase().includes("avira"))
+    message.react (":avira:848622328668487710")
+
   if (message.content.toLowerCase().includes("crotte"))
     message.react("💩");  
   
@@ -556,7 +560,6 @@ if (message.content === "e!invite") {
     }
 
    
- 
 
     if (message.content.toLowerCase().startsWith("siri"))
       message.channel.send("Je suis Siri votre assistant personnel ", {
