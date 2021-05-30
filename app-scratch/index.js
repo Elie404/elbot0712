@@ -14,13 +14,11 @@ const s4d = {
     tokenInvalid: false,
     reply: null,
     joiningMember: null,
-    database: new Database("./db.json"),
     checkMessageExists() {
         if (!s4d.client) throw new Error('You cannot perform message operations without a Discord.js client')
         if (!s4d.client.readyTimestamp) throw new Error('You cannot perform message operations while the bot is not connected to the Discord API')
     }
 };
-
 s4d.client = new s4d.Discord.Client({
     fetchAllMembers: true
 });
@@ -38,11 +36,7 @@ s4d.client.on('raw', async (packet) => {
     }
 });
 var dotenv = require('dotenv') 
-function colourRandom() {
-    var num = Math.floor(Math.random() * Math.pow(2, 24));
-    return '#' + ('00000' + num.toString(16)).substr(-6);
-}
-
+var arguments2, command;
 function mathRandomInt(a, b) {
     if (a > b) {
         // Swap a and b to ensure a is smaller.
@@ -55,74 +49,11 @@ function mathRandomInt(a, b) {
 
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!ping' || (s4dmessage.content) == 'e!infobot') {
-        s4dmessage.channel.send({
-            embed: {
-                title: 'Ping + Info du bot',
-                color: (colourRandom()),
-                image: {
-                    url: null
-                },
-
-                description: (['Le ping pong c\'est de la merde je préfère jouer avec des briques!', '\n', 'Sinon mon ping est de: ', s4d.client.ws.ping, 'ms', '\n', 'Informations complémentaire:', '\n', 'Je suis sur ', s4d.client.guilds.cache.size, ' serveurs en ce moment!', '\n', 'Je suis en ce moment héberger sur heroku!', '\n', 'Ce bot est open source! Vous pouvez vous inspirez de son code ou même le copier. Si vous souhaitiez voir le github de elbot faites tout simplement la commande `e!github`! PS: si vous copiez le code n\'hésitez pas à crédit 👀! ', '\n', 'Si vous souhaitiez connaitre toutes mes commandes faites la commande `e!help`!'].join('')),
-                footer: {
-                    text: null
-                },
-                thumbnail: {
-                    url: 'https://tenor.com/view/table-tennis-ping-pong-gif-12400523'
-                }
-
-            }
-        });
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('808417100128583690'))) {
-        s4d.database.add(String('message-ubuntu'), parseInt(1));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('829448346598768660'))) {
-        s4d.database.add(String('message-spam'), parseInt(1));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('702539839626674277'))) {
-        s4d.database.add(String('message-ac'), parseInt(1));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('800809368727191592'))) {
-        s4d.database.add(String('message-frite'), parseInt(1));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('823284578386837504'))) {
-        s4d.database.add(String('message-hartasia'), parseInt(1));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.guild) == (s4d.client.guilds.cache.get('390909164354011136'))) {
-        s4d.database.add(String('message-omega'), parseInt(1));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('823284578386837504'))) {
-        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-ubuntu')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
+    arguments2 = (s4dmessage.content).split(' ');
+    command = arguments2.splice(0, 1)[0];
+    if (command == 'e!say') {
+        s4dmessage.channel.send(String('t\'es con ou quoi? **ECRIT** '));
+        s4dmessage.channel.send(String((arguments2.join(' '))));
     }
 
 });
@@ -147,15 +78,15 @@ s4d.client.on('message', async (s4dmessage) => {
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((String((s4dmessage.content)).includes(String('Tu ne peux pas manger tout ca ! Tu va devenir gros ! Prend en moins stp et adapte combien tu prend en fonction de si tu a faim ou pas !'))) && (s4dmessage.author.id) == '550404246290563072') {
-        s4dmessage.channel.send(String('JE MANGE CE QUE JE VEUX TU VAS RIEN FAIRE imbecile'));
+    if ((s4dmessage.content) == 'e!number') {
+        s4dmessage.channel.send(String((mathRandomInt(1, 100))));
     }
 
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!number') {
-        s4dmessage.channel.send(String((mathRandomInt(1, 100))));
+    if ((String((s4dmessage.content)).includes(String('Tu ne peux pas manger tout ca ! Tu va devenir gros ! Prend en moins stp et adapte combien tu prend en fonction de si tu a faim ou pas !'))) && (s4dmessage.author.id) == '550404246290563072') {
+        s4dmessage.channel.send(String('JE MANGE CE QUE JE VEUX TU VAS RIEN FAIRE imbecile'));
     }
 
 });
