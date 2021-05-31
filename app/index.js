@@ -481,6 +481,15 @@ if (message.content.startsWith("Nice"))
         "Counnasse"
       );
 
+      if (message.content.toLowerCase().includes("courgette"))
+      message.react("🥒")
+
+      if (message.content.toLowerCase().includes("Counnasse"))
+      message.react("🥒")
+
+      if (message.content.toLowerCase().includes("concombre"))
+      message.react("🥒")
+
     if (message.content.toLowerCase().includes("chromebook"))
       message.channel.send("Ubuntu>>>>>>>>>>");
 
