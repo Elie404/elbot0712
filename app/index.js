@@ -411,8 +411,6 @@ client.on("message", message => {
   if (message.content.toLowerCase().includes("total"))
     message.react(":total:836981580157026304");
 
-  if (message.content.startsWith("courgette")) message.channel.send("Counasse");
-
     function play() {
       const channel = client.channels.cache.get("817012298057121852");
       if (!channel)
@@ -476,6 +474,11 @@ if (message.content.startsWith("Nice"))
     if (message.content.toLowerCase().includes("rmxbot"))
       message.channel.send(
         "Ptdr il est plus inutile que moi mais je l'aime bien"
+      );
+
+      if (message.content.toLowerCase().includes("courgette"))
+      message.channel.send(
+        "Counnasse"
       );
 
     if (message.content.toLowerCase().includes("chromebook"))
