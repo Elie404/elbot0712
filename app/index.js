@@ -392,6 +392,10 @@ client.on("message", message => {
     if (message.content.toLowerCase().includes("avira"))
     message.channel.send ("PARAPLUIIIIIIIIIIIIIIIIIIIIE @Johan")
 
+    if (message.content.toLowerCase().includes("changez pour stickman"))
+    message.channel.send ("*Mangez des stickmans")
+
+
     if (message.content.toLowerCase().includes("apple"))
     message.channel.send (" https://tenor.com/view/lisa-simpsons-think-differently-gif-10459041")
 
