@@ -493,6 +493,11 @@ if (message.content.startsWith("Nice"))
     if (message.content.toLowerCase().includes("chromebook"))
       message.channel.send("Ubuntu>>>>>>>>>>");
 
+      if (message.content.toLowerCase().includes("il va faire tout noir"))
+      message.channel.send("Ta gueule 🙃")
+    
+      if (message.content.toLowerCase().includes("ça va faire tout noir"))
+      message.channel.send("Ta gueule 🙃")
 
     if (message.content === "issou")
       message.channel.send(
@@ -505,7 +510,7 @@ if (message.content.startsWith("Nice"))
     if (message.content === "Je le répète mais la place de l'homme c'est où?")
       message.channel.send("Devant le pc entrain de se br****");
 
-    
+      
       if (message.content === "e!say"){
         if(!message.content.startsWith(prefix)) return;
         var contenu = args.join(" ");
