@@ -124,6 +124,13 @@ s4d.client.on('message', async (s4dmessage) => {
 });
 
 s4d.client.on('message', async (s4dmessage) => {
+    if (((String((s4dmessage.content)).includes(String('tg'))) || (String((s4dmessage.content)).includes(String('ta gueule')))) && ((s4dmessage.author.id) == '670753544416264195' || (s4dmessage.author.id) == '742014652611035166')) {
+        s4dmessage.channel.send(String('Toi ta gueule.'));
+    }
+
+});
+
+s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!infoserver') {
         s4dmessage.channel.send({
             embed: {
