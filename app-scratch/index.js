@@ -14,6 +14,7 @@ const s4d = {
     tokenInvalid: false,
     reply: null,
     joiningMember: null,
+    database: new Database("./db.json"),
     checkMessageExists() {
         if (!s4d.client) throw new Error('You cannot perform message operations without a Discord.js client')
         if (!s4d.client.readyTimestamp) throw new Error('You cannot perform message operations while the bot is not connected to the Discord API')
@@ -35,8 +36,8 @@ s4d.client.on('raw', async (packet) => {
         s4d.client.emit(packet.t, guild, channel, message, member, packet.d.emoji.name);
     }
 });
-var dotenv = require('dotenv') 
 var arguments2, command;
+
 function mathRandomInt(a, b) {
     if (a > b) {
         // Swap a and b to ensure a is smaller.
@@ -47,6 +48,13 @@ function mathRandomInt(a, b) {
     return Math.floor(Math.random() * (b - a + 1) + a);
 }
 
+
+s4d.client.on('message', async (s4dmessage) => {
+    if (((String((s4dmessage.content)).includes(String('tg'))) || (String((s4dmessage.content)).includes(String('ta gueule')))) && ((s4dmessage.author.id) == '670753544416264195' || (s4dmessage.author.id) == '742014652611035166')) {
+        s4dmessage.channel.send(String('Toi ta gueule.'));
+    }
+
+});
 
 s4d.client.on('message', async (s4dmessage) => {
     arguments2 = (s4dmessage.content).split(' ');
@@ -71,13 +79,6 @@ s4d.client.on('message', async (s4dmessage) => {
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('808417100128583690'))) {
-        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-ac')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!number') {
         s4dmessage.channel.send(String((mathRandomInt(1, 100))));
     }
@@ -92,40 +93,12 @@ s4d.client.on('message', async (s4dmessage) => {
 });
 
 s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('390909164354011136'))) {
-        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-omega')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
     if ((s4dmessage.content) == 'e!restart' && (s4dmessage.author.id) == '727572859727380531') {
         s4dmessage.channel.send(String('Je redémarre tkt'));
     } else if ((s4dmessage.content) == 'e!restart' && (s4dmessage.author.id) == '670753544416264195') {
         s4dmessage.channel.send(String('NAN JE REDÉMARRE PAS SALE ARABE '));
     } else if ((s4dmessage.content) == 'e!restart' && (s4dmessage.author.id) != '727572859727380531' || (s4dmessage.content) == 'e!restart' && (s4dmessage.author.id) != '670753544416264195') {
         s4dmessage.channel.send(String('NAN JE REDÉMARRE PAS'));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('829448346598768660'))) {
-        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-spam')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('800809368727191592'))) {
-        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-frite')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if (((String((s4dmessage.content)).includes(String('tg'))) || (String((s4dmessage.content)).includes(String('ta gueule')))) && ((s4dmessage.author.id) == '670753544416264195' || (s4dmessage.author.id) == '742014652611035166')) {
-        s4dmessage.channel.send(String('Toi ta gueule.'));
     }
 
 });
@@ -152,13 +125,6 @@ s4d.client.on('message', async (s4dmessage) => {
 
             }
         });
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!message' && (s4dmessage.guild) == (s4d.client.guilds.cache.get('823284578386837504'))) {
-        s4dmessage.channel.send(String((['Il y\'a ', s4d.database.get(String('message-hartasia')), ' messages depuis le 28 mai!', 'sur le serveur ', s4dmessage.guild].join(''))));
     }
 
 });
