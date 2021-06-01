@@ -37,7 +37,7 @@ s4d.client.on('raw', async (packet) => {
     }
 });
 var arguments2, command;
-
+var dotenv = require('dotenv')
 function mathRandomInt(a, b) {
     if (a > b) {
         // Swap a and b to ensure a is smaller.
