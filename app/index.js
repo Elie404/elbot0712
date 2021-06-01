@@ -481,7 +481,7 @@ if (message.content.startsWith("Nice"))
         "Counnasse"
       );
 
-      if (message.content.toLowerCase().includes("@elbot"))
+      if (message.content.toLowerCase().includes(""))
       var embed = new Discord.MessageEmbed()
       .setTitle("**Elbot 1.1.1**")
       .setDescription(
@@ -597,6 +597,10 @@ if (message.content === "e!invite") {
     if (message.content.toLowerCase().startsWith("siri"))
       message.channel.send("Je suis Siri votre assistant personnel ", {
         tts: true
+      });
+
+      s4d.client.on('ready', async () => {
+        s4d.client.channels.cache.get('813335285932621865').send(String('Le bot est connecté!'));
       });
 
       if (message.content === "e!ping") {
