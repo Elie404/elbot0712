@@ -481,6 +481,15 @@ if (message.content.startsWith("Nice"))
         "Counnasse"
       );
 
+      if (message.content.toLowerCase().includes("@elbot"))
+      var embed = new Discord.MessageEmbed()
+      .setTitle("**Elbot 1.1.1**")
+      .setDescription(
+      "Mon prefix: `e!`\n Ma page d'aide: `e!help`\n mon lien d'invitation: https://discord.com/api/oauth2/authorize?client_id=809344905674489866&permissions=3152128&scope=bot")
+       .setColor("BLUE")
+       .setFooter("Elbot est un bot open source. Pour voir son code complet faites `e!github`")
+       message.channel.send(embed);
+
       if (message.content.toLowerCase().includes("courgette"))
       message.react("🥒")
 
