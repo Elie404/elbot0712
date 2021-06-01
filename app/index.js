@@ -599,8 +599,8 @@ if (message.content === "e!invite") {
         tts: true
       });
 
-      s4d.client.on('ready', async () => {
-        s4d.client.channels.cache.get('813335285932621865').send(String('Le bot est connecté!'));
+      client.on('ready', async () => {
+        client.channels.cache.get('813335285932621865').send(String('Le bot est connecté!'));
       });
 
       if (message.content === "e!ping") {
