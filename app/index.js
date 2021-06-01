@@ -481,7 +481,7 @@ if (message.content.startsWith("Nice"))
         "Counnasse"
       );
 
-      if (message.content.toLowerCase().includes(""))
+      if (message.content.toLowerCase().includes("@elbot"))
       var embed = new Discord.MessageEmbed()
       .setTitle("**Elbot 1.1.1**")
       .setDescription(
