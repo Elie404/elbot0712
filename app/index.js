@@ -519,7 +519,12 @@ if (message.content.startsWith("Nice"))
     if (message.content === "Je le répète mais la place de l'homme c'est où?")
       message.channel.send("Devant le pc entrain de se br****");
 
+      if (message.content === "feur")
+      message.channel.send("Juste tg.")
       
+      if (message.content === "Juste tg.")
+      message.channel.send("https://tenor.com/view/ferme-ta-gueule-ta-gueule-ferme-la-ftg-tg-gif-5034296\n ça nous ferai des vacances ")
+
       if (message.content === "e!say"){
         if(!message.content.startsWith(prefix)) return;
         var contenu = args.join(" ");
