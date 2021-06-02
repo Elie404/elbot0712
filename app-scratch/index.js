@@ -85,6 +85,12 @@ s4d.client.on('message', async (s4dmessage) => {
 
 });
 
+s4d.client.on('message', async (s4dmessage) => {
+    if (String((s4dmessage.content)).includes(String('stickman'))) {
+        s4dmessage.react(':stickman:849616699841183744');
+    }
+
+});
 
 
 s4d.client.on('message', async (s4dmessage) => {
