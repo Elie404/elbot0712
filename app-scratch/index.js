@@ -49,35 +49,10 @@ function mathRandomInt(a, b) {
 }
 
 
-var dotenv = require ('dotenv')
+var dotenv = require('dotenv')
 
 s4d.client.on('message', async (s4dmessage) => {
-    if (((String((s4dmessage.content)).includes(String('tg'))) || (String((s4dmessage.content)).includes(String('ta gueule')))) && ((s4dmessage.author.id) == '670753544416264195' || (s4dmessage.author.id) == '742014652611035166')) {
-        s4dmessage.channel.send(String('Toi ta gueule.'));
-    }
-
-});
-
-s4d.client.on('message', async (s4dmessage) => {
-    if ((s4dmessage.content) == 'e!reaction' && '727572859727380531' == ((s4dmessage.member).user.id)) {
-        s4dmessage.channel.send({
-            embed: {
-                title: 'Sélectionnez vos rôles ',
-                color: '#ff0000',
-                image: {
-                    url: null
-                },
-
-                description: (['--------------------Vous êtes: --------------------', '\n', 'Développeur 👨🏼‍💻', '\n', 'AntiMEE6 🙈', '\n', 'Apple addict 🤓', '\n', 'Fan de tutititutu 🕺', '\n', 'Twittos 🐦', '\n', 'Youtuber ▶️', '\n', 'Streamer 🎮', '\n', 'Monteur 📼', '\n', 'Photographe 📸', '\n', 'Homme 👨', '\n', 'Femme 👩 ', '\n', '--------------------Age:--------------------', '\n', '12 ou - ans 1️⃣', '\n', '13-15 ans 2️⃣', '\n', '16-18 ans 3️⃣ ', '\n', '18+ 4️⃣', '\n', '--------------------Quel OS:--------------------', '\n', 'iPhone 🍎 ', '\n', 'Android 🤖 ', '\n', 'Mac 🖥 ', '\n', 'macOS nothing 🚫', '\n', 'Windows 🪟', '\n', 'Linux 🐧 ', '\n', '--------------------Vous jouez à:--------------------', '\n', 'Among US :among:817444152307613706', '\n', 'Minecraft :minecraft:836844843559944193', '\n', 'Jeu de course (Asphalt,Réal racing 3…) 🏎 ', '\n', '--------------------Notifs:--------------------', '\n', 'Notif Twitter 🔔', '\n', 'Notif Mise à Jour serveur 📨', '\n', 'Notif Elbot :elbot:817423861158510633', '\n', 'Notif Mise à Jour serveur 📢'].join('')),
-                footer: {
-                    text: null
-                },
-                thumbnail: {
-                    url: null
-                }
-
-            }
-        });
+    if (((s4dmessage.member).user.id) == '809344905674489866' && (s4dmessage.channel) == s4d.client.channels.cache.get('818139959428907029')) {
         s4dmessage.react('👨🏼‍💻');
         s4dmessage.react('🙈');
         s4dmessage.react('🤓');
@@ -106,6 +81,38 @@ s4d.client.on('message', async (s4dmessage) => {
         s4dmessage.react('📨');
         s4dmessage.react(':elbot:817423861158510633');
         s4dmessage.react('📢');
+    }
+
+});
+
+s4d.client.on('message', async (s4dmessage) => {
+    if (((String((s4dmessage.content)).includes(String('tg'))) || (String((s4dmessage.content)).includes(String('ta gueule')))) && ((s4dmessage.author.id) == '670753544416264195' || (s4dmessage.author.id) == '742014652611035166')) {
+        s4dmessage.channel.send(String('Toi ta gueule.'));
+    }
+
+});
+
+s4d.client.on('message', async (s4dmessage) => {
+    if ((s4dmessage.content) == 'e!reaction' && '727572859727380531' == ((s4dmessage.member).user.id)) {
+        s4dmessage.delete();
+        s4dmessage.channel.send({
+            embed: {
+                title: 'Sélectionnez vos rôles ',
+                color: '#ff0000',
+                image: {
+                    url: null
+                },
+
+                description: (['--------------------Vous êtes: --------------------', '\n', 'Développeur 👨🏼‍💻', '\n', 'AntiMEE6 🙈', '\n', 'Apple addict 🤓', '\n', 'Fan de tutititutu 🕺', '\n', 'Twittos 🐦', '\n', 'Youtuber ▶️', '\n', 'Streamer 🎮', '\n', 'Monteur 📼', '\n', 'Photographe 📸', '\n', 'Homme 👨', '\n', 'Femme 👩 ', '\n', '--------------------Age:--------------------', '\n', '12 ou - ans 1️⃣', '\n', '13-15 ans 2️⃣', '\n', '16-18 ans 3️⃣ ', '\n', '18+ 4️⃣', '\n', '--------------------Quel OS:--------------------', '\n', 'iPhone 🍎 ', '\n', 'Android 🤖 ', '\n', 'Mac 🖥 ', '\n', 'macOS nothing 🚫', '\n', 'Windows 🪟', '\n', 'Linux 🐧 ', '\n', '--------------------Vous jouez à:--------------------', '\n', 'Among US :among:817444152307613706', '\n', 'Minecraft :minecraft:836844843559944193', '\n', 'Jeu de course (Asphalt,Réal racing 3…) 🏎 ', '\n', '--------------------Notifs:--------------------', '\n', 'Notif Twitter 🔔', '\n', 'Notif Mise à Jour serveur 📨', '\n', 'Notif Elbot :elbot:817423861158510633', '\n', 'Notif Mise à Jour serveur 📢'].join('')),
+                footer: {
+                    text: null
+                },
+                thumbnail: {
+                    url: null
+                }
+
+            }
+        });
     }
 
 });
