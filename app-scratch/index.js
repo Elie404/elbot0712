@@ -127,7 +127,7 @@ s4d.client.on('MESSAGE_REACTION_ADD', async (rGuild, rChannel, rMessage, rMember
 
 });
 
-s4d.client.login('process.env.TOKEN').catch((e) => {
+s4d.client.login(process.env.TOKEN).catch((e) => {
     s4d.tokenInvalid = true;
     s4d.tokenError = e;
 });
