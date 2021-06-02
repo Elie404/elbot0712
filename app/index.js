@@ -343,7 +343,7 @@ client.on("message", message => {
   if (message.content.toLowerCase().includes("ubuntu"))
     message.react("<:ubuntu:816654825248915487>");
   
-  if (message.content.startsWith("Jannot Gaming"))
+    if (message.content.toLowerCase().includes("Jannot Gaming"))
     message.channel.send(
       "https://tenor.com/view/potatoz-jano-gaming-nowagifs-gif-18818348"
     );
@@ -481,6 +481,31 @@ if (message.content.startsWith("Nice"))
         "Counnasse"
       );
 
+      if (message.content.toLowerCase().includes("ouille"))
+      message.channel.send(
+        "https://pbs.twimg.com/media/ETkK977X0AE3x-x.jpg"
+      );
+
+      if (message.content.toLowerCase().includes("ouh"))
+      message.channel.send(
+        "https://pbs.twimg.com/media/ETkK977X0AE3x-x.jpg"
+      );
+
+      if (message.content.toLowerCase().includes("philippe"))
+      message.channel.send(
+        "https://philippe-etchebest.com/wp-content/uploads/2020/10/philippe-etchebest-1200x720.jpg"
+      );
+
+      if (message.content.toLowerCase().includes("etchebest"))
+      message.channel.send(
+        "https://philippe-etchebest.com/wp-content/uploads/2020/10/philippe-etchebest-1200x720.jpg"
+      );
+
+      if (message.content.toLowerCase().includes("etjtebaise"))
+      message.channel.send(
+        "https://pbs.twimg.com/media/Dx8tPuSWwAU0VUd.jpg"
+      );
+
       if (message.content.toLowerCase().includes("@elbot"))
       var embed = new Discord.MessageEmbed()
       .setTitle("**Elbot 1.1.1**")
@@ -519,6 +544,7 @@ if (message.content.startsWith("Nice"))
     if (message.content === "Je le répète mais la place de l'homme c'est où?")
       message.channel.send("Devant le pc entrain de se br****");
 
+    
       if (message.content === "feur")
       message.channel.send("Juste tg.")
       
