@@ -492,11 +492,13 @@ if (message.content.startsWith("Nice"))
       );
 
       if (message.content.toLowerCase().includes("philippe"))
+        if(message.author.id === client.user.id) return;
       message.channel.send(
         "https://philippe-etchebest.com/wp-content/uploads/2020/10/philippe-etchebest-1200x720.jpg"
       );
 
       if (message.content.toLowerCase().includes("etchebest"))
+        if(message.author.id === client.user.id) return;
       message.channel.send(
         "https://philippe-etchebest.com/wp-content/uploads/2020/10/philippe-etchebest-1200x720.jpg"
       );
