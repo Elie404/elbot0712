@@ -139,4 +139,4 @@ client.on("message", message => {
   }
 });
 
-client.login("ODA5MzQ0OTA1Njc0NDg5ODY2.YCTvLg.U640p8gdna3OhqFz-pz9rJHdA9o");
+client.login("non");
