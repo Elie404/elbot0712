@@ -3,6 +3,7 @@ const client = new Discord.Client();
 require("discord-buttons")(client);
 const disbut = require("discord-buttons");
 const fetch = require("node-fetch");
+const ytdl = require ("ytdl-core");
 var prefix = "e!";
 const ReactionRoleManager = require("discord-reaction-role");
 var request = require('request');
@@ -48,7 +49,7 @@ if (typeof window !== "undefined") {
     }
     return Math.floor(Math.random() * (b - a + 1) + a);
   }
-/*
+
   async function execute(message, serverQueue) {
     const args = message.content.split(" "); // On récupère les arguments dans le message pour la suite
 
@@ -78,7 +79,7 @@ if (typeof window !== "undefined") {
         connection: null,
         songs: [],
         volume: 1,
-        //playing: true
+        playing: true
       };
 
       // On ajoute la queue du serveur dans la queue globale:
@@ -91,7 +92,7 @@ if (typeof window !== "undefined") {
         var connection = await voiceChannel.join();
         queueConstruct.connection = connection;
         // On lance la musique
-       // play(message.guild, queueConstruct.songs[0]);
+        play(message.guild, queueConstruct.songs[0]);
       } catch (err) {
         //On affiche les messages d'erreur si le bot ne réussi pas à se connecter, on supprime également la queue de lecture
         console.log(err);
@@ -170,7 +171,7 @@ if (typeof window !== "undefined") {
     dispatcher.setVolume(1); // On définie le volume
     serverQueue.textChannel.send(`Démarrage de la musique: **${song.title}**`);
   }
-/*/
+
   client.on("message", async message => {
     if (message.author.bot) {
       return;
@@ -197,6 +198,7 @@ if (typeof window !== "undefined") {
     }
   });
 
+  
   client.on("message", async message => {
     const args = message.content
       .slice(prefix.length)
