@@ -1,6 +1,5 @@
 from asyncio.tasks import run_coroutine_threadsafe
 import discord
-from discord import channel
 from discord.ext import commands, tasks
 import asyncio
 import random
@@ -34,15 +33,73 @@ status = ["Chante tutititutu tout en changeant pour Ubuntu",
 @bot.event
 async def on_ready():
 	print("Le code Python est allumé !")
-	await bot.change_presence(activity=discord.Streaming(name="Chante tutititutu tout en changeant pour Ubuntu", url="twitch.tv/eli__zay"))
-
+	changeStatus.start()
 @tasks.loop(seconds = 5)
 async def changeStatus():
-    game = discord.Game(random.choice(status))
-    await bot.change_presence(activity=discord.Streaming(name="My Stream", url="twitch.tv/eli__zay"))
-    change = await changeStatus()
+	game = discord.Game(random.choice(status))
+	await bot.change_presence(status = discord.Status.dnd, activity = game)
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        embed=discord.Embed(title="Commande inexistante", description="Cette commande n'existe pas. Vérifiez que vous n'avez pas fait d'erreur de frappe. Sinon vous pouvez consultez la page d'aide https://el2zay.is-a.dev/elbot/ ", color=0xff0000)
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        await ctx.message.reply(embed=embed)
+
+@bot.command()
+async def pessi(ctx):
+    await ctx.send()
+
+@bot.command()
+async def say(ctx):
+    await ctx.send()
+
+@bot.command()
+async def uno(ctx):
+    await ctx.send()
+
+@bot.command()
+async def sondage(ctx):
+    await ctx.send()
+
+@bot.command()
+async def test(ctx):
+    await ctx.send()
 
 
+@bot.command()
+async def restart(ctx):
+    await ctx.send()
+
+
+
+@bot.command()
+async def clear(ctx):
+    await ctx.send()
+
+@bot.command()
+async def invite(ctx):
+    await ctx.send()
+
+@bot.command()
+async def github(ctx):
+    await ctx.send()
+
+@bot.command()
+async def play(ctx):
+    await ctx.send()
+
+@bot.command()
+async def stop(ctx):
+    await ctx.send()
+
+@bot.command()
+async def brique(ctx):
+    await ctx.send()
+
+@bot.command()
+async def rickdetect(ctx):
+    await ctx.send()
 
 
 
@@ -267,4 +324,9 @@ async def roulette(ctx):
 async def ping(ctx: commands.Context):
     await ctx.send(f"Le ping pong c'est de la merde je préfère utiliser des briques comme raquettes mais en tout cas j'ai {round(bot.latency * 1000)}ms (PY)")
 
-bot.run("T'essayes de regarder quoi là????")
+
+
+
+
+
+bot.run("ba nan mdr")
