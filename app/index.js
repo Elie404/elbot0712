@@ -249,8 +249,27 @@ const context = Canvas.getContext("2d");
 	message.channel.send(attachment);
     }
 
-   
-  
+   if (command === "removebg")
+   request.post({
+    url: 'https://api.remove.bg/v1.0/removebg',
+    formData: {
+      image_url: args [1],
+      size: 'auto',
+    },
+    headers: {
+      'X-Api-Key': process.env.REMOVEBG
+    },
+    encoding: null
+  }, function(error, response, body) {
+    if(error) return message.channel.send('Request failed:', error);
+    if(response.statusCode != 200) return console.error('Error:', response.statusCode, body.toString('utf8'));
+    fs.writeFileSync("no-bg.png", body);
+  });  
+
+
+
+
+
     //Début de la commande clear
 if (command === "clear") {
     if (!message.content.startsWith(prefix)) return;
@@ -314,8 +333,93 @@ if (command === "clear") {
 }
 //Fin de la commande clear
 
-    
-    
+   
+//Début du rick detect 
+if (command === "rickdetect"){
+  // Dépendences
+const fetch = require('node-fetch'); // https://www.npmjs.com/package/node-fetch
+
+var linkA = args.join(' ')
+
+
+
+// Chercher un rick roll
+    // Fonction pour fetch le site (et change l'user agent pour empêcher certains site de croire que c'est un robot)
+    async function fetchSite(url){
+        // Fetch
+        var code = await fetch(url, { method: 'GET', follow: 20, size: 500000000})
+            .then(res => res.text())
+            .catch(err => {
+                // En cas d'erreur
+                if(err.code === "ENOTFOUND"){
+                
+                var embed = new Discord.MessageEmbed()
+                .setTitle("Commande rickdetect")
+                .setDescription("Il est impossible d'accèder a la page : Erreur de réseau ou problème venant du site.")
+                .setColor("RED")
+                .setImage("https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+                .setFooter("Powered by Rickdetect https://github.com/johan-perso/rickdetect");
+                return message.channel.send(embed);
+                  }})
+              
+                var embed = new Discord.MessageEmbed()
+            .setTitle(
+            "Commande rickdetect"
+          )
+          .setDescription("Une erreur c'est produite ")
+          .setColor("RED")
+          .setImage("https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+          .setFooter("Powered by Rickdetect https://github.com/johan-perso/rickdetect");
+          message.channel.send(embed);
+            }
+        
+        // Retourner le code
+        return code
+    }})
+
+    // Enleve les espaces et saut de lignede l'URL
+    if(linkA.includes(" ") && linkA.includes("\n")) var linkB = linkA.replace(/ /g, "").replace(/\n/g, "")
+    if(linkA.includes(" ") && !linkA.includes("\n")) var linkB = linkA.replace(/ /g, "")
+    if(!linkA.includes(" ") && linkA.includes("\n")) var linkB = linkA.replace(/\n/g, "")
+    if(!linkA.includes(" ") && !linkA.includes("\n")) var linkB = linkA
+
+    // Ajoute https:// si besoin
+    if(!linkB.startsWith("https://") && !linkB.startsWith("http://")) var link = "https://" + linkB
+    if(linkB.startsWith("https://") || linkB.startsWith("http://")) var link = linkB
+
+    // Dit si il n'y a pas de domaine
+    if(!link.includes(".")) return message.channel.send("\"" + link + "\"") + (" n'est pas une adresse valide, il manque une extension de domaine (.com, .fr, etc).")
+
+    // Regarder si le code de la page contient certains éléments
+    fetchSite(link).then(code => {
+        if(code.toLowerCase().includes("never","gonna","give","you","up") || code.toLowerCase().includes("rick","roll") || code.toLowerCase().includes("never","gonna","desert","you")){
+          var embed = new Discord.MessageEmbed()
+          .setTitle(
+          "Commande rickdetect"
+        )
+        .setDescription("Ce lien est suspect...")
+        .setColor("RED")
+        .setImage("https://images.emojiterra.com/twitter/v13.0/512px/26a0.png")
+        .setFooter("Powered by Rickdetect https://github.com/johan-perso/rickdetect");
+        message.channel.send(embed);
+          
+        } else {
+          var embed = new Discord.MessageEmbed()
+          .setTitle(
+          "Commande rickdetect"
+        )
+        .setDescription("Ce lien n'a pas l'air très suspect...")
+        .setColor("GREEN")
+        .setImage("https://assets.wprock.fr/emoji/joypixels/512/2705.png")
+        .setFooter("Powered by Rickdetect https://github.com/johan-perso/rickdetect");
+        message.channel.send(embed);
+          
+        }
+    })
+
+}
+
+      client.on("message", async message => {
       if (message.content === "e!twitter")
         var embed = new Discord.MessageEmbed()
           .setTitle(
@@ -374,13 +478,13 @@ if (command === "clear") {
 
       if (message.content === "e!help") {
         var embed = new Discord.MessageEmbed()
-          .setTitle("**VOICI TOUTES LES COMMANDES DE ELBOT**")
+          .setTitle("**Help**")
           .setDescription(
-            "`pessi` Pour connaitre tous les mots de pessis \n`help` Pas besoins de le dire \n`say` Pour me faire dire tout et n'importe quoi \n`uno` Pour avoir la carte changement de sens \n`test` Pour savoir si je fonctionne \n`invite` Pour m'inviter dans un serveur 🙃\n`twitter` Pour connaitre le compte twitter de ce serveur\n`sondage` Pour faire un sondage \n`serverinfo` Pour connaitre toutes les informations sur ce serveur\n`number` Pour avoir un chiffre aléatoire entre 0 et 100.\n`heberger` Pour savoir sur quel hébergeur je suis héberger en ce moment!\n`restart` Pour que je redémarre. *en ce moment cette commande est HS*\n`github` Pour voir mon repo github\n`version` Pour connaitre sur quelle version je tourne en ce moment\n`ping` Pour connaitre mon ping.\n `clear` Pour clear le nombre de message que vous souhaitiez (max 100) \n**COMMANDE MUSIQUE**\n`brique` pour que je chante TUTITITUTU \n`play` suivi d'un lien youtube pour que je chante la musique de ton choix \n`stop` Pour que j'arrête de chanter"
+            "Pour ne pas se compliqué la vie car je ne peux pas H24 mettre la commande help à jour je vous invite à regarder le site de elbot où vous trouverez tout ce que vous avez besoin. https://el2zay.is-a.dev/elbot"
           )
           .setColor("BLURPLE")
           .setFooter(
-            "(En plus si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà"
+            "(Mais si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà"
           );
         message.channel.send(embed);
       }
@@ -466,6 +570,22 @@ if (command === "clear") {
           "Regarde cette vidéo et on verra. \n https://www.youtube.com/watch?v=jdUXfsMTv7o"
         );
 
+         if (message.content.toLowerCase().includes("de"))
+        message.channel.send(
+          "3, **SOLEIL**"
+        );
+        
+         if (message.content.toLowerCase().includes("2"))
+        message.channel.send(
+          "3, **SOLEIL**"
+        );
+           
+        if (message.content.toLowerCase().includes("deux"))
+        message.channel.send(
+          "3, **SOLEIL**"
+        );
+        
+        
       if (message.content.toLowerCase().includes("ubuntu c'est de la merde"))
         message.channel.send(
           "Regarde cette vidéo et on verra. \n https://www.youtube.com/watch?v=jdUXfsMTv7o"
@@ -577,6 +697,5 @@ if (command === "clear") {
           );
         }
 
-      }
-      )}
+      })
     client.login(process.env.TOKEN);
