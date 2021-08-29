@@ -267,10 +267,30 @@ const context = Canvas.getContext("2d");
   });  
 
 
+if (command === 'translate'){
+var axios = require("axios").default;
+
+var options = {
+  method: 'POST',
+  url: 'https://microsoft-translator-text.p.rapidapi.com/BreakSentence',
+  params: {'api-version': '3.0'},
+  headers: {
+    'content-type': 'application/json',
+    'x-rapidapi-host': 'microsoft-translator-text.p.rapidapi.com',
+    'x-rapidapi-key': 'ffd0a072aemsha712f4e14e24bbap188337jsn4a60f04677cc'
+  },
+  data: [{Text: args [0]}]
+};
+
+axios.request(options).then(function (response) {
+	message.channel.send(response.data);
+}).catch(function (error) {
+	message.channel.send(error);
+});
+}
 
 
-
-    //Début de la commande clear
+    /*Début de la commande clear
 if (command === "clear") {
     if (!message.content.startsWith(prefix)) return;
     
@@ -333,102 +353,11 @@ if (command === "clear") {
 }
 //Fin de la commande clear
 
-   
-//Début du rick detect 
-if (command === "rickdetect"){
-  // Dépendences
-const fetch = require('node-fetch'); // https://www.npmjs.com/package/node-fetch
-
-var linkA = args.join(' ')
+   */
 
 
-
-// Chercher un rick roll
-    // Fonction pour fetch le site (et change l'user agent pour empêcher certains site de croire que c'est un robot)
-    async function fetchSite(url){
-        // Fetch
-        var code = await fetch(url, { method: 'GET', follow: 20, size: 500000000})
-            .then(res => res.text())
-            .catch(err => {
-                // En cas d'erreur
-                if(err.code === "ENOTFOUND"){
-                
-                var embed = new Discord.MessageEmbed()
-                .setTitle("Commande rickdetect")
-                .setDescription("Il est impossible d'accèder a la page : Erreur de réseau ou problème venant du site.")
-                .setColor("RED")
-                .setImage("https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
-                .setFooter("Powered by Rickdetect https://github.com/johan-perso/rickdetect");
-                return message.channel.send(embed);
-                  }})
-              
-                var embed = new Discord.MessageEmbed()
-            .setTitle(
-            "Commande rickdetect"
-          )
-          .setDescription("Une erreur c'est produite ")
-          .setColor("RED")
-          .setImage("https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
-          .setFooter("Powered by Rickdetect https://github.com/johan-perso/rickdetect");
-          message.channel.send(embed);
-            }
-        
-        // Retourner le code
-        return code
-    }})
-
-    // Enleve les espaces et saut de lignede l'URL
-    if(linkA.includes(" ") && linkA.includes("\n")) var linkB = linkA.replace(/ /g, "").replace(/\n/g, "")
-    if(linkA.includes(" ") && !linkA.includes("\n")) var linkB = linkA.replace(/ /g, "")
-    if(!linkA.includes(" ") && linkA.includes("\n")) var linkB = linkA.replace(/\n/g, "")
-    if(!linkA.includes(" ") && !linkA.includes("\n")) var linkB = linkA
-
-    // Ajoute https:// si besoin
-    if(!linkB.startsWith("https://") && !linkB.startsWith("http://")) var link = "https://" + linkB
-    if(linkB.startsWith("https://") || linkB.startsWith("http://")) var link = linkB
-
-    // Dit si il n'y a pas de domaine
-    if(!link.includes(".")) return message.channel.send("\"" + link + "\"") + (" n'est pas une adresse valide, il manque une extension de domaine (.com, .fr, etc).")
-
-    // Regarder si le code de la page contient certains éléments
-    fetchSite(link).then(code => {
-        if(code.toLowerCase().includes("never","gonna","give","you","up") || code.toLowerCase().includes("rick","roll") || code.toLowerCase().includes("never","gonna","desert","you")){
-          var embed = new Discord.MessageEmbed()
-          .setTitle(
-          "Commande rickdetect"
-        )
-        .setDescription("Ce lien est suspect...")
-        .setColor("RED")
-        .setImage("https://images.emojiterra.com/twitter/v13.0/512px/26a0.png")
-        .setFooter("Powered by Rickdetect https://github.com/johan-perso/rickdetect");
-        message.channel.send(embed);
-          
-        } else {
-          var embed = new Discord.MessageEmbed()
-          .setTitle(
-          "Commande rickdetect"
-        )
-        .setDescription("Ce lien n'a pas l'air très suspect...")
-        .setColor("GREEN")
-        .setImage("https://assets.wprock.fr/emoji/joypixels/512/2705.png")
-        .setFooter("Powered by Rickdetect https://github.com/johan-perso/rickdetect");
-        message.channel.send(embed);
-          
-        }
-    })
-
-}
 
       client.on("message", async message => {
-      if (message.content === "e!twitter")
-        var embed = new Discord.MessageEmbed()
-          .setTitle(
-            "**VOICI LE TWITTER PRINCIPAL DU SERVEUR CHANGEZ POUR UBUNTU**"
-          )
-          .setDescription("https://twitter.com/ubuntulebest")
-          .setColor("BLUE")
-          .setFooter("Abonne toi 👀");
-      message.channel.send(embed);
 
       if (message.content.toLowerCase() === "e!watchbot") {
         let button = new disbut.MessageButton()
@@ -489,8 +418,7 @@ var linkA = args.join(' ')
         message.channel.send(embed);
       }
 
-      if (message.content === "e!test")
-        message.channel.send("Y'a quoi zbi? Sinon moi je fonctionne.");
+
 
       if (message.content === "e!brique") {
         play();
@@ -562,27 +490,13 @@ var linkA = args.join(' ')
       if (message.content.startsWith("elbot"))
         message.react(":elbot:817423861158510633");
 
+
       if (message.content.toLowerCase().includes("ubuntu"))
         message.react("<:ubuntu:816654825248915487>");
 
       if (message.content.toLowerCase().includes("linux c'est de la merde"))
         message.channel.send(
           "Regarde cette vidéo et on verra. \n https://www.youtube.com/watch?v=jdUXfsMTv7o"
-        );
-
-         if (message.content.toLowerCase().includes("de"))
-        message.channel.send(
-          "3, **SOLEIL**"
-        );
-        
-         if (message.content.toLowerCase().includes("2"))
-        message.channel.send(
-          "3, **SOLEIL**"
-        );
-           
-        if (message.content.toLowerCase().includes("deux"))
-        message.channel.send(
-          "3, **SOLEIL**"
         );
         
         
@@ -697,5 +611,7 @@ var linkA = args.join(' ')
           );
         }
 
-      })
-    client.login(process.env.TOKEN);
+      })}
+      )}
+    
+    client.login(process.env.TOKEN)
