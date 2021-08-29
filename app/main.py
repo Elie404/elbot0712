@@ -1,13 +1,18 @@
 from asyncio.tasks import run_coroutine_threadsafe
 import discord
 from discord.ext import commands, tasks
+from discord_slash import SlashCommand
 import asyncio
 import random
+from discord.ext.commands.errors import BotMissingPermissions
+from discord_slash.utils.manage_commands import create_option
 import requests
 import youtube_dl
+intents = discord.Intents.default()
+intents.members = True
 
-
-bot = commands.Bot(command_prefix = "e!", description = "Tutititutu mais en Python")
+bot = commands.Bot(command_prefix = "e!", description = "Tutititutu mais en Python", intents=intents)
+slash = SlashCommand(bot, sync_commands = True)
 musics = {}
 ytdl = youtube_dl.YoutubeDL()
 
@@ -23,11 +28,12 @@ funFact = ["Elbot était créer de base pour diffuser seulement le tutitititutu 
 "Je suis héberger sur glitch et sur la Freebox Delta de el2zay. (et un tout petit bout de code sur le Chrottebook de Johan)"]
 
 
-status = ["Chante tutititutu tout en changeant pour Ubuntu", 
-"e!help",
+status = ["Chante tutititutu tout en changeant pour Ubuntu",
 "https://el2zay/elbot.is-a.dev",
-"Entrain d'être coder en python et en JS"]
+"Entrain d'être coder en python et en JS"
+"LE CODE JS EST HS!!! Il revient bientôt dès que le bot sera en discord.js13"]
 
+bot.remove_command("help")
 
 
 @bot.event
@@ -37,7 +43,7 @@ async def on_ready():
 @tasks.loop(seconds = 5)
 async def changeStatus():
 	game = discord.Game(random.choice(status))
-	await bot.change_presence(status = discord.Status.dnd, activity = game)
+	await bot.change_presence(status = discord.Status.idle, activity = game)
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -46,60 +52,20 @@ async def on_command_error(ctx, error):
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
         await ctx.message.reply(embed=embed)
 
-@bot.command()
-async def pessi(ctx):
-    await ctx.send()
+    if isinstance(error, commands.MissingRequiredArgument):
+        embed=discord.Embed(title="Erreur", description="Un argument manque (nombre, mot/lettres etc...)\nMerci de réessayer avec un argument.\nCode Erreur:  Erreur N°1", color=0xff0000)
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        await ctx.message.reply(embed=embed)
 
-@bot.command()
-async def say(ctx):
-    await ctx.send()
+    elif isinstance(error, commands.MissingPermissions):
+        embed=discord.Embed(title="Erreur", description="Vous n'avez pas les permissions requises. Demandez à un administrateur ou au fondateur du serveur.\nCode Erreur : Erreur N°2", color=0xff0000)
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        await ctx.message.reply(embed=embed)
+    elif isinstance(error.original, discord.Forbidden):
+      embed=discord.Embed(title="Erreur", description="Je n'ai pas l'autorisation pour faire cette commande. \nEssayez de vérifier les paramètres des rôles sur le serveur.\nCode erreur : Erreur N°3", color=0xff0000)
+      embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+      await ctx.message.reply(embed=embed)
 
-@bot.command()
-async def uno(ctx):
-    await ctx.send()
-
-@bot.command()
-async def sondage(ctx):
-    await ctx.send()
-
-@bot.command()
-async def test(ctx):
-    await ctx.send()
-
-
-@bot.command()
-async def restart(ctx):
-    await ctx.send()
-
-
-
-@bot.command()
-async def clear(ctx):
-    await ctx.send()
-
-@bot.command()
-async def invite(ctx):
-    await ctx.send()
-
-@bot.command()
-async def github(ctx):
-    await ctx.send()
-
-@bot.command()
-async def play(ctx):
-    await ctx.send()
-
-@bot.command()
-async def stop(ctx):
-    await ctx.send()
-
-@bot.command()
-async def brique(ctx):
-    await ctx.send()
-
-@bot.command()
-async def rickdetect(ctx):
-    await ctx.send()
 
 
 
@@ -119,18 +85,18 @@ async def infoserver(ctx):
     serverDescription = server.description #ok
     numberOfPerson = server.member_count #ok
     serverName = server.name #ok
-    serverOwner = server.owner #ok
+    serverOwner = server.owner
     serverRegion = server.region #ok
     serverIcon = server.icon_url #ok
     serverRoles = len(server.roles) #ok
     serverID = server.id #ok
-    serverRoleList = [r.mention for r in server.roles] #ok
     emoji_count = len(server.emojis) #ok
     embed = discord.Embed(title = "Commande infoserver", description = f"Information sur le serveur **{serverName}**", color=0x00ffff)
     embed.set_thumbnail(url = serverIcon)
     embed.add_field(name = "Nombre de personne : ", value= numberOfPerson, inline = True)
     embed.add_field(name = "Description : ", value= serverDescription, inline = True)
     embed.add_field(name = "Fondateur : ", value = serverOwner, inline = True)
+    embed.add_field(name='Date de création :', value=server.created_at.__format__("%d/%m/%Y à %H:%M"), inline=True)
     embed.add_field(name = "ID : ", value = serverID, inline = True)	
     embed.add_field(name = "Region : ", value = serverRegion, inline = True)
     embed.add_field(name = "Nombre de salons textuels : ", value = numberOfTextChannels, inline = True)	
@@ -139,9 +105,19 @@ async def infoserver(ctx):
     embed.add_field(name = "Nombre de personnes : ", value = numberOfPerson, inline = True)	
     embed.add_field(name = "Nombre d'émoji du serveur : ", value = emoji_count, inline = True)		
     embed.add_field(name = "Nombre de rôles : ", value = serverRoles, inline = True)	
-    embed.add_field(name = "Liste des rôles", value = serverRoleList, inline = True)
     await ctx.send(embed = embed)
 	
+
+@bot.command()
+async def infoserver2(ctx):
+    server = ctx.guild
+    serverIcon = server.icon_url
+    serverName = server.name
+    serverListRole = [r.mention for r in server.roles]
+    embed = discord.Embed(title = "Commande infoserver suite", description = f"Partie 2 : Information sur le serveur **{serverName}**", color=0x00ffff)
+    embed.set_thumbnail(url = serverIcon)
+    embed.add_field(name='Liste des rôles :', value=", ".join(serverListRole))    
+    await ctx.send(embed = embed)
 
 
 
@@ -246,6 +222,8 @@ async def avatar(ctx):
 	embed.set_thumbnail(url = ctx.author.avatar_url)
 	await ctx.send(embed = embed)
 
+
+
 	
 @bot.command()
 @commands.has_permissions(ban_members = True)
@@ -320,13 +298,120 @@ async def roulette(ctx):
 	await ctx.send("**" + loser.name + "**" + " !")
 
 
+
 @bot.command(name="ping")
 async def ping(ctx: commands.Context):
     await ctx.send(f"Le ping pong c'est de la merde je préfère utiliser des briques comme raquettes mais en tout cas j'ai {round(bot.latency * 1000)}ms (PY)")
 
 
+#slash
+
+@slash.slash(name="number", guild_ids=[865914342041714700], description="Choisi un nombre au hasard pour toi.", options=[
+    create_option(name="limite_inferieure", description="Le nombre le plus bas.", option_type=4, required= True),
+    create_option(name="limite_superieure", description="Le nombre le plus haut.", option_type=4, required= True)
+
+])
+async def number(ctx, limite_inferieure = 1, limite_superieure = 10):
+     await ctx.send("Le nombre choisi par moi même est...")
+     await asyncio.sleep(1)
+     await ctx.send("Roulement de tambours")
+     await asyncio.sleep(2)
+     await ctx.send("https://tenor.com/view/pitch-perfect-belly-drum-belly-fat-gif-4484753")
+     await asyncio.sleep(1)
+     num = random.randint(limite_inferieure, limite_superieure)
+     await ctx.send(f"**{num}**")
 
 
 
 
-bot.run("ba nan mdr")
+
+
+
+
+#JAVASCRIPT 
+
+@bot.command()
+async def pessi(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+@bot.command()
+async def say(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+@bot.command()
+async def uno(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+@bot.command()
+async def sondage(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+
+
+@bot.command()
+async def restart(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+
+
+@bot.command()
+async def clear(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+@bot.command()
+async def invite(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+@bot.command()
+async def github(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: el2zay.is-a.dev/elbot\nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+
+@bot.command()
+async def help(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+
+@bot.command()
+async def play(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+@bot.command()
+async def stop(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+@bot.command()
+async def brique(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+@bot.command()
+async def rickdetect(ctx):
+    embed=discord.Embed(title="Erreur", description="Le code JS n'est pas disponible pour l'instant.\nPour savoir quelles commandes sont disponibles en Python vous pouvez aller voir la page d'aide: https://el2zay.is-a.dev/elbot \nLe code JS revient bientôt!\nCode erreur : Erreur N°4", color=0xff0000)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+    await ctx.message.reply(embed=embed)
+
+bot.run("T'as cru quoi mdrrr")
