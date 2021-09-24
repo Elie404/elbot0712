@@ -1,617 +1,483 @@
+// Importer discord.js et crée un client
 const Discord = require("discord.js");
-const client = new Discord.Client();
-require("discord-buttons")(client);
-const disbut = require("discord-buttons");
-const fetch = require("node-fetch");
-const ytdl = require ("ytdl-core");
+const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", "DIRECT_MESSAGES", "GUILD_PRESENCES", "GUILD_MEMBERS", "GUILD_VOICE_STATES"], partials: ["CHANNEL"] });
+
+// Importer chalk, node-fetch, canvas et dotenv
+const chalk = require('chalk');
+const fetch = require('node-fetch');
+const Canvas = require('canvas');
+require('dotenv').config();
+
+// Discord-player
+	// L'importer et crée un player
+	const { Player } = require("discord-player");
+	const player = new Player(client, {
+		ytdlDownloadOptions: {
+			filter: "audioonly"
+		}
+	})
+
+	// Egalement utiliser les attachements Discord
+	const { Attachment } = require("@discord-player/extractor");
+	player.use("Attachment", Attachment);
+
+	// Event
+	player.on("error", (queue, error) => {
+		queue.metadata.channel.send(`❌ | Une erreur inconnu s'est produite\n\n${"```\n"}${error.message}${"\n```"}`)
+	});
+	player.on("connectionError", (queue, error) => {
+		queue.metadata.channel.send(`❌ | Erreur lors de la connexion\n\n${"```\n"}${error.message}${"\n```"}`);
+	});
+	player.on("trackStart", (queue, track) => {
+		queue.metadata.channel.send(`🎶 | Je joue **${track.title.replace("video0.mp4","TITUTUTITI")}**`);
+	});
+	player.on("botDisconnect", (queue) => {
+		queue.metadata.channel.send("❌ | J'ai été déconnecté du vocal : suppression de la queue...");
+	});
+	player.on("channelEmpty", (queue) => {
+		queue.metadata.channel.send("❌ | Tout le monde est parti du vocal :(");
+	});
+	player.on("queueEnd", (queue) => {
+		queue.metadata.channel.send("✅ | J'ai fini de lire l'ensemble des musiques présentes dans la queue");
+	});
+	
+// Préfix du bot
 var prefix = "e!";
-const ReactionRoleManager = require("discord-reaction-role");
-var request = require('request');
-var fs = require('fs');
-const { mainModule } = require("process");
-const manager = new ReactionRoleManager(client, {
-  storage: "./reaction-role.json"
-});
-client.reactionRoleManager = manager;
 
-// NOUVEAU
-const queue = new Map();
+// Quand le bot est allumé et connecté
+client.on('ready', () => {
+	// L'afficher dans la console
+	log(`Oh tiens je m'appelle ${client.user.username}#${client.user.discriminator}`, "connect")
+})
 
-client.reactionRoleManager = manager;
+// Fonction pour vérifier si on est dans un salon vocal
+async function isVocal(interaction, message){
+	// Si c'est une interaction
+	if(interaction){
+		if(!interaction.guildId) return (await generateErrorEmbed("Vous devez être dans un serveur.","JS_8_1"))
+		if(!interaction.member.voice.channelId) return (await generateErrorEmbed("Vous devez être dans un salon vocal.","JS_8_2"))
+	}
 
-client.on("ready", () => {
-  console.log(
-    `Oh tiens je m'appelle ${client.user.tag} (ID : ${client.user.id})`
-  );
+	// Si c'est un message
+	if(message){
+		if(message.channel.type !== "dm") return (await generateErrorEmbed("Vous devez être dans un serveur.","JS_8_3"))
+		if(!message.member.voice.channel) return (await generateErrorEmbed("Vous devez être dans un salon vocal.","JS_8_4"))
+	}
 
-  // Auto Up
-  setInterval(() => {
-    fetch("https://ac-v2.glitch.me").catch(err => {});
-    fetch("https://achost.tk").catch(err => {});
-    fetch("https://rmxbot-test.glitch.me").catch(err => {});
-    fetch("https://elbot-test.glitch.me").catch(err => {});
-  }, 70000);
-});
-
-let Database;
-if (typeof window !== "undefined") {
-  Discord = DiscordJS;
-  Database = EasyDatabase;
-} else {
-  Database = require("easy-json-database");
-
-  function mathRandomInt(a, b) {
-    if (a > b) {
-      // Swap a and b to ensure a is smaller.
-      var c = a;
-      a = b;
-      b = c;
-    }
-    return Math.floor(Math.random() * (b - a + 1) + a);
-  }
-
-  async function execute(message, serverQueue) {
-    const args = message.content.split(" "); // On récupère les arguments dans le message pour la suite
-
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-      // Si l'utilisateur n'est pas dans un salon vocal
-      return message.channel.send("Vous devez être dans un salon vocal!");
-    }
-    const permissions = voiceChannel.permissionsFor(message.client.user); // On récupère les permissions du bot pour le salon vocal
-    if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
-      // Si le bot n'a pas les permissions
-      return message.channel.send(
-        "J'ai besoin des permissions pour rejoindre le salon et pour y jouer de la musique!"
-      );
-    }
-
-    const songInfo = await ytdl.getInfo(args[1]);
-    const song = {
-      title: songInfo.videoDetails.title,
-      url: songInfo.videoDetails.video_url
-    };
-
-    if (!serverQueue) {
-      const queueConstruct = {
-        textChannel: message.channel,
-        voiceChannel: voiceChannel,
-        connection: null,
-        songs: [],
-        volume: 1,
-        playing: true
-      };
-
-      // On ajoute la queue du serveur dans la queue globale:
-      queue.set(message.guild.id, queueConstruct);
-      // On y ajoute la musique
-      queueConstruct.songs.push(song);
-
-      try {
-        // On connecte le bot au salon vocal et on sauvegarde l'objet connection
-        var connection = await voiceChannel.join();
-        queueConstruct.connection = connection;
-        // On lance la musique
-        play(message.guild, queueConstruct.songs[0]);
-      } catch (err) {
-        //On affiche les messages d'erreur si le bot ne réussi pas à se connecter, on supprime également la queue de lecture
-        console.log(err);
-        queue.delete(message.guild.id);
-        return message.channel.send(err);
-      }
-    } else {
-      serverQueue.songs.push(song);
-      console.log(serverQueue.songs);
-      return message.channel.send(`${song.title} has been added to the queue!`);
-    }
-  }
-
-  function skip(message, serverQueue) {
-    if (!message.member.voice.channel) {
-      // on vérifie que l'utilisateur est bien dans un salon vocal pour skip
-      return message.channel.send(
-        "Vous devez être dans un salon vocal pour passer une musique!"
-      );
-    }
-    if (!serverQueue) {
-      // On vérifie si une musique est en cours
-      return message.channel.send("Aucune lecture de musique en cours !");
-    }
-    serverQueue.connection.dispatcher.end(); // On termine la musique courante, ce qui lance la suivante grâce à l'écoute d'événement
-    // finish
-  }
-
-  function stop(message, serverQueue) {
-    if (!message.member.voice.channel) {
-      // on vérifie que l'utilisateur est bien dans un salon vocal pour skip
-      return message.channel.send(
-        "Vous devez être dans un salon vocal pour stopper la lecture!"
-      );
-    }
-    if (!serverQueue) {
-      // On vérifie si une musique est en cours
-      return message.channel.send("Aucune lecture de musique en cours !");
-    }
-    serverQueue.songs = [];
-    serverQueue.connection.dispatcher.end();
-  }
-  function loop(message, serverQueue) {
-    if (!message.member.voice.channel) {
-      // on vérifie que l'utilisateur est bien dans un salon vocal pour skip
-      return message.channel.send(
-        "Vous devez être dans un salon vocal pour répéter la lecture!"
-      );
-    }
-    if (!serverQueue) {
-      // On vérifie si une musique est en cours
-      return message.channel.send("Aucune lecture de musique en cours !");
-    }
-    serverQueue.songs = [];
-    serverQueue.connection.dispatcher.loop();
-  }
-
-  function play(guild, song) {
-    console.log(song);
-    const serverQueue = queue.get(guild.id); // On récupère la queue de lecture
-    if (!song) {
-      // Si la musique que l'utilisateur veux lancer n'existe pas on annule tout et on supprime la queue de lecture
-      serverQueue.voiceChannel.leave();
-      queue.delete(guild.id);
-      return;
-    }
-    // On lance la musique
-    const dispatcher = serverQueue.connection
-      .play(ytdl(song.url, { filter: "audioonly" }))
-      .on("finish", () => {
-        // On écoute l'événement de fin de musique
-        serverQueue.songs.shift(); // On passe à la musique suivante quand la courante se termine
-        play(guild, serverQueue.songs[0]);
-      })
-      .on("error", error => console.error(error));
-    dispatcher.setVolume(1); // On définie le volume
-    serverQueue.textChannel.send(`Démarrage de la musique: **${song.title}**`);
-  }
-
-  client.on("message", async message => {
-    if (message.author.bot) {
-      return;
-    }
-    if (!message.content.startsWith(prefix)) {
-      return;
-    }
-
-    if (message.channel.type !== "dm")
-      var serverQueue = queue.get(message.guild.id);
-
-    if (message.content.startsWith(`e!play`)) {
-      execute(message, serverQueue); // On appel execute qui soit initialise et lance la musique soit ajoute à la queue la musique
-      return;
-    } else if (message.content.startsWith(`e!skip`)) {
-      skip(message, serverQueue); // Permettra de passer à la musique suivante
-      return;
-    } else if (message.content.startsWith(`e!stop`)) {
-      stop(message, serverQueue); // Permettra de stopper la lecture
-      return;
-    } else if (message.content.startsWith(`e!loop`)) {
-      loop(message, serverQueue); // Permettra de répéter la lecture
-      return;
-    }
-  });
-
-  
-  client.on("message", async message => {
-    const args = message.content
-      .slice(prefix.length)
-      .trim()
-      .split(/ +/);
-    const command = args.shift().toLowerCase();
-    if (command === "say") {
-      if (!message.content.startsWith(prefix)) return;
-      var contenu = args.join(" ");
-      if (!contenu)
-        return message.channel.send("T'es con ou quoi? **ECRIT FRÈRE**");
-      message.channel.send(
-        args
-          .join(" ")
-          .replace(/@everyone/g, "everyone")
-          .replace(/@here/g, "here")
-      );
-      message.delete().catch();
-    }
-    
-    
-    if(command === "sticksay"){
-        if (!message.content.startsWith(prefix)) return;
-      
-        var text = args.join('\n')
-        
-        
-const Canvas = canvas.createCanvas(1024, 1024);
-const context = Canvas.getContext("2d");
-        
-        	const background = await canvas.loadImage('./Say.png');
-	// This uses the canvas dimensions to stretch the image onto the entire canvas
-	context.drawImage(background, 0, 0, Canvas.width, Canvas.height);
-
-	// Set the color of the stroke
-	context.strokeStyle = '#74037b';
-	// Draw a rectangle with the dimensions of the entire Canvas
-	context.strokeRect(0, 0, Canvas.width, Canvas.height);
-	// Select the font size and type from one of the natively available fonts
-	context.font = '42px sans-serif';
-	// Select the style that will be used to fill the text in
-	context.fillStyle = '#000000';
-	// Actually fill the text with a solid color
-	context.fillText(text, 420, 250);
-
-      const attachment = new Discord.MessageAttachment(Canvas.toBuffer(), 'stickman.png');
-
-	message.channel.send(attachment);
-    }
-
-   if (command === "removebg")
-   request.post({
-    url: 'https://api.remove.bg/v1.0/removebg',
-    formData: {
-      image_url: args [1],
-      size: 'auto',
-    },
-    headers: {
-      'X-Api-Key': process.env.REMOVEBG
-    },
-    encoding: null
-  }, function(error, response, body) {
-    if(error) return message.channel.send('Request failed:', error);
-    if(response.statusCode != 200) return console.error('Error:', response.statusCode, body.toString('utf8'));
-    fs.writeFileSync("no-bg.png", body);
-  });  
-
-
-if (command === 'translate'){
-var axios = require("axios").default;
-
-var options = {
-  method: 'POST',
-  url: 'https://microsoft-translator-text.p.rapidapi.com/BreakSentence',
-  params: {'api-version': '3.0'},
-  headers: {
-    'content-type': 'application/json',
-    'x-rapidapi-host': 'microsoft-translator-text.p.rapidapi.com',
-    'x-rapidapi-key': 'ffd0a072aemsha712f4e14e24bbap188337jsn4a60f04677cc'
-  },
-  data: [{Text: args [0]}]
-};
-
-axios.request(options).then(function (response) {
-	message.channel.send(response.data);
-}).catch(function (error) {
-	message.channel.send(error);
-});
+	// Si tout est bon
+	return true;
 }
 
+// Fonction pour crée un embed d'erreur
+function generateErrorEmbed(description, code){
+	// Crée un embed (le but même de la fonction)
+	var embed = new Discord.MessageEmbed()
+	.setTitle("Oh mince, je viens d'avoir une erreur...")
+	.setDescription(description)
+	.setThumbnail("https://firebasestorage.googleapis.com/v0/b/storage-bf183.appspot.com/o/otherImages%2Felbot-triste.png?alt=media")
+	.setColor("#e51c23")
+	.setFooter("Code erreur : #" + code)
 
-    /*Début de la commande clear
-if (command === "clear") {
-    if (!message.content.startsWith(prefix)) return;
-    
-    var nombre = args[0];
-    message.channel.bulkDelete(nombre);
-
-    if (!nombre) return message.channel.send("T'es con ou quoi???? **DIS UN CHIFFRE FRÈRE**");
-    
-    if (nombre > 20) {
-        var embed = new Discord.MessageEmbed()
-        .setTitle("WARN Commande clear")
-        .setDescription(`ATTENTION!!! ES-TU SÛR DE VOULOIR CLEAR ${nombre} MESSAGES???`)
-        .setColor("#ff0000")
-        .setFooter("Oui=✅        Non=❌")
-        message.channel.send(embed);
-    }
-    if (message.content.toLowerCase().includes(embed = new Discord.MessageEmbed()
-        .setTitle("WARN Commande clear")
-        .setDescription(`ATTENTION!!! ES-TU SÛR DE VOULOIR CLEAR ${nombre} MESSAGES???`)
-        .setColor("#ff0000")
-        .setFooter("Oui=✅        Non=❌")
-        (message.react('❌').then(r => {
-            message.react('✅');
-          }))));
-        
-        
-        message.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '❌' || reaction.emoji.name == '✅'),
-            { max: 1, time: 30000 }).then(collected => {
-            if (collected.first().emoji.name == '✅') {
-                message.channel.bulkDelete(nombre)
-            } else {
-                message.channel.send("Bon bah du coup t'as annulé")
-            }
-            }).catch(() => {
-                message.channel.send('T\'as pas répondu je suppose que t\'as annulé');
-            });
-    ;
-
-    if (nombre > 100) {
-        return message.channel.send("Vous ne pouvez pas clear plus de 100 messages.");
-    }
-
-    if (isNaN(nombre)) return message.channel.send("Es tu au courant du fait que ton nombre, n'est pas un nombre ?");
-    
-    if (nombre > 1) {
-        var embed = new Discord.MessageEmbed()
-        .setTitle("Commande clear")
-        .setDescription(`Salut! ${nombre} messages ont été clear dont ta commande clear!`)
-        .setColor("RED")
-        message.channel.send(embed);
-    }
-
-    if (nombre < 2) {
-        var embed = new Discord.MessageEmbed()
-        .setTitle("Commande clear")
-        .setDescription(`Salut! 1 message a été clear dont ta commande clear!`)
-        .setColor("RED")
-        message.channel.send(embed);
-    }
+	// Retourner l'embed
+	return embed;
 }
-//Fin de la commande clear
 
-   */
+// Fonction pour afficher un texte dans la console
+function log(text, type){
+	if(type === "error" || type === "err") console.log(chalk.red(text))
+	if(type === "connect") console.log(chalk.yellow(text))
+	if(type === "info") console.log(chalk.blue(text))
+	if(!type) console.log(text)
+}
 
+// Commande du bot
+async function handleCommand(name, args, interaction, message){
+	// Commande "ping"
+	if(name === "ping"){
+		if(interaction) interaction.reply({ content: `Le ping pong c'est de la merde je préfère utiliser des briques comme raquettes, en tout cas j'ai ${client.ws.ping} ms de ping (JS)`, ephemeral: true })
+		if(message) message.reply({ content: `Le ping pong c'est de la merde je préfère utiliser des briques comme raquettes, en tout cas j'ai ${client.ws.ping} ms de ping (JS)` })
+	}
+	// Commande "say"
+	if(name === "say"){
+		// Obtenir l'argument
+		if(interaction) var content = args[0].value
+		if(message) var content = args.join(' ')
 
+		// Vérifier si un argument a bien été donné
+		if(!content && interaction) return interaction.reply({ embeds: [(await generateErrorEmbed("Aucun argument n'a été donné...","JS_1_0"))], ephemeral: true });
+		if(!content && message) return message.reply({ embeds: [(await generateErrorEmbed("Aucun argument n'a été donné...","JS_1_1"))] });
 
-      client.on("message", async message => {
+		// Envoyer le message
+		if(interaction) client.channels.cache.get(interaction.channelId).send({ content: content.replace(/@/g, "@_ _") }).catch(err => {})
+		if(message) message.delete().catch(err => {}) && message.channel.send({ content: content.replace(/@/g, "@_ _") })
+	}
+	// Commande "sticksay"
+	if(name === "sticksay"){
+		// Mettre en attente l'interaction
+		if(interaction) interaction.deferReply({ ephemeral: true }).catch(err => {})
 
-      if (message.content.toLowerCase() === "e!watchbot") {
-        let button = new disbut.MessageButton()
-          .setLabel("Elbot")
-          .setURL("https://status.watchbot.app/bot/809344905674489866")
-          .setStyle("url");
-        let button2 = new disbut.MessageButton()
-          .setLabel("Reveilleur")
-          .setURL("https://status.watchbot.app/bot/852913553328439339")
-          .setStyle("url");
-        let button3 = new disbut.MessageButton()
-          .setLabel("Anti-Coupable v2 ")
-          .setURL("https://status.watchbot.app/bot/789214685089759253")
-          .setStyle("url");
-        let button4 = new disbut.MessageButton()
-          .setLabel("Rmxbot")
-          .setURL("https://status.watchbot.app/bot/725455465701572740")
-          .setDisabled()
-          .setStyle("url");
-        let button5 = new disbut.MessageButton()
-          .setLabel("OmegaBOT")
-          .setURL("https://status.watchbot.app/bot/550404246290563072")
-          .setStyle("url");
+		// Obtenir l'argument
+		if(interaction) var content = args[0].value
+		if(message) var content = args.join(' ')
 
-        var embed = new Discord.MessageEmbed()
-          .setTitle(
-            "Lequel de ces bots souhaitiez vous connaitre les incidents reportés?"
-          )
-          .setDescription(
-            "1️⃣ Elbot \n 2️⃣ Reveilleur \n 3️⃣ Anti-Coupable v2 \n 4️⃣ Rmxbot (non surveiller pour le moment) \n 5️⃣ OmegaBOT"
-          )
-          .setColor("33ff33")
-          .setFooter("Sélectionnez un bouton");
-        let row = new disbut.MessageActionRow()
-          .addComponent(button)
-          .addComponent(button2)
-          .addComponent(button3)
-          .addComponent(button4)
-          .addComponent(button5);
-        message.channel.send(embed, row);
-      }
+		// Vérifier si un argument a bien été donné
+		if(!content && interaction) return interaction.reply({ embeds: [(await generateErrorEmbed("Aucun argument n'a été donné...","JS_10_0"))], ephemeral: true });
+		if(!content && message) return message.reply({ embeds: [(await generateErrorEmbed("Aucun argument n'a été donné...","JS_10_1"))] });
+	
+		// Vérifier si l'argument est trop long
+		if(content.length > 34 && interaction) return interaction.reply({ embeds: [(await generateErrorEmbed("L'argument dépasse la limite de 34 caractères.","JS_10_2"))], ephemeral: true });
+		if(content.length > 34 && message) return message.reply({ embeds: [(await generateErrorEmbed("L'argument dépasse la limite de 34 caractères.","JS_10_3"))] });
 
-      if (message.content === "e!uno")
-        message.channel.send(
-          "https://tenor.com/view/nou-no-you-uno-uno-reverse-gif-21173861"
-        );
+		// Modifier l'argument
+		var content = content.match(/.{1,13}/g)
+		var content = content.map(c => c).join('\n')
 
-      if (message.content === "e!help") {
-        var embed = new Discord.MessageEmbed()
-          .setTitle("**Help**")
-          .setDescription(
-            "Pour ne pas se compliqué la vie car je ne peux pas H24 mettre la commande help à jour je vous invite à regarder le site de elbot où vous trouverez tout ce que vous avez besoin. https://el2zay.is-a.dev/elbot"
-          )
-          .setColor("BLURPLE")
-          .setFooter(
-            "(Mais si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà"
-          );
-        message.channel.send(embed);
-      }
+		// Crée un canvas de 1024x1024 pixels
+		const canvas = Canvas.createCanvas(1024, 1024);
+		const context = canvas.getContext('2d');
 
+		// Ajouter un fond
+		const background = await Canvas.loadImage('https://firebasestorage.googleapis.com/v0/b/storage-bf183.appspot.com/o/stickman%2FTemplate%2FSay.png?alt=media');
+		context.drawImage(background, 0, 0, canvas.width, canvas.height);
+	
+		// Choisir la police d'écriture et la couleur
+		context.font = '70px sans-serif';
+		context.fillStyle = '#000';
 
+		// Ajouter un texte
+		const applyText = (canvas, text) => {
+			const context = canvas.getContext('2d');
 
-      if (message.content === "e!brique") {
-        play();
-        message.channel.send("let's go :bricks:");
-      }
+			// Définir la taille de base de l'écriture
+			let fontSize = 70;
 
-      if (message.content === "e!version")
-        message.channel.send("En ce moment je tourne sur la version 1.1.1");
+			do {
+				context.font = `${fontSize -= 10}px sans-serif`;
+			} while (context.measureText(text).width > canvas.width - 300);
 
-      if (message.content === "e!heberger")
-        message.channel.send("Le code JS est en ce moment hébergé sur Glitch");
+			// Retourner le résultat
+			return context.font;
+		};
 
-      if (message.content === "e!github")
-        message.channel.send(
-          "Voici le lien de mon Github\nhttps://bit.ly/33sfsMv \n Attention le repo n'a pas été mise à jour depuis longtemps suite à un changement d'hébergeur"
-        );
+		// Ajouter un texte
+		context.font = applyText(canvas, content);	
+		context.fillText(content, 416, 240);
 
-      if (message.content === "e!invite") {
-        message.channel.send(
-          "https://discord.com/api/oauth2/authorize?client_id=809344905674489866&permissions=8&scope=bot \n N'oubliez pas d'autoriser la permission admin."
-        );
-      }
+		// Crée un attachement
+		const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'sticksay.png');
 
-      if (message.content === "e!pessi") {
-        var embed = new Discord.MessageEmbed()
-          .setTitle("**LES MOTS DES PESSI**")
-          .setDescription(
-            "culotté\npleure\nchiale\nchouine\ncouine\naboie\nmiaule\nboude\nbrûle\nhurle\ncrie\ncrève\npleurniche\nricane\njacasse\nagonise\nbeugle\nchuchote\nmurmure\nronfle\nsuffoque\nimplose\nexplose\nrugis\nsiffle\nronronne\ncaquette\nrenifle\nvis\nroucoule\nsouffre\nsoufle\ndort"
-          )
-          .setColor("BLURPLE");
-        message.channel.send(embed);
-      }
-      {
-        if (
-          message.content.toLowerCase().includes("je suis suisse") &&
-          message.author.id !== "809344905674489866" &&
-          message.content !== "Je suis suisse et je suis polie" &&
-          message.content !== "Je suis suisse et j'ai les moyens" &&
-          message.content !== "Je suis suisse mais suis-je sexy?"
-        )
-          message.channel.send("Mais quelle heure est il?");
+		// Donner l'image
+		if(interaction) return interaction.editReply({ files: [attachment] });
+		if(message) return message.channel.send({ files: [attachment] });
+	}
+	// Commande "removebg"
+	if(name === "removebg"){
+		// Afficher une erreur
+		if(interaction) return interaction.reply({ embeds: [(await generateErrorEmbed("Cette commande n'a pas encore été développé : elle sera bientôt là","JS_3_0"))], ephemeral: true });
+		if(message) return message.reply({ embeds: [(await generateErrorEmbed("Cette commande n'a pas encore été développé : elle sera bientôt là","JS_3_1"))] });
+	}
+	// Commande "translate"
+	if(name === "translate"){
+		// Afficher une erreur
+		if(interaction) return interaction.reply({ embeds: [(await generateErrorEmbed("Cette commande n'a pas encore été développé : elle sera bientôt là","JS_4_0"))], ephemeral: true });
+		if(message) return message.reply({ embeds: [(await generateErrorEmbed("Cette commande n'a pas encore été développé : elle sera bientôt là","JS_4_1"))] });
+	}
+	// Commande "clear"
+	if(name === "clear"){
+		// Afficher une erreur
+		if(interaction) return interaction.reply({ embeds: [(await generateErrorEmbed("Cette commande n'a pas encore été développé : elle sera bientôt là","JS_5_0"))], ephemeral: true });
+		if(message) return message.reply({ embeds: [(await generateErrorEmbed("Cette commande n'a pas encore été développé : elle sera bientôt là","JS_5_1"))] });
+	}
+	// Commande "rickdetect"
+	if(name === "rickdetect"){
+		// Crée un embed
+		var deferEmbed = new Discord.MessageEmbed()
+		.setTitle("Rickdetect | Anti-Rickroll")
+		.setDescription("Veuillez patienter : vérification du lien en cours...")
+		.setColor("#33ff33")
+		.setFooter("Rickdetect crée par Johan le stickman   |   johan-perso/rickdetect  @  GitHub")
 
-        if (message.content === "Moi je sais")
-          message.channel.send("C'est propre ici, non?");
+		// Faire que Elbot réflechisse
+		if(interaction) interaction.deferReply({ ephemeral: true })
+		if(message) var msg = await message.reply({ embeds: [deferEmbed] })
 
-        if (message.content === "Bah oui")
-          message.channel.send("Et l'or des nazis?");
+		// Si le bot est démarré en dev
+		if(process.argv.slice(2)[0] === "dev"){
+			if(interaction) return interaction.reply({ embeds: [(await generateErrorEmbed("Cette commande est actuellement désactivé : le bot est démarré en mode dev.","JS_7_6"))], ephemeral: true });
+			if(msg) return msg.edit({ embeds: [(await generateErrorEmbed("Cette commande est actuellement désactivé : le bot est démarré en mode dev.","JS_7_7"))] });	
+		}
 
-        if (message.content === "Steuplait")
-          message.channel.send("SUISSE \n AHAHAHAHA");
+		// Obtenir le lien à vérifier
+		if(interaction) var link = args[0].value
+		if(message) var link = args.join(' ')
 
-        if (message.content === "Je suis suisse et je suis polie")
-          message.channel.send("C'est bien");
+        // Enleve les espaces et saut de ligne de l'URL
+        var link = link.replace(/ /g, "").replace(/\n/g, "")
 
-        if (message.content === "Je suis suisse et j'ai les moyens")
-          message.channel.send("Youpi");
+        // Vérifier si un argument a été donné
+        if(!link){
+			if(interaction) return interaction.reply({ embeds: [(await generateErrorEmbed("Veuillez saisir une URL à vérifié","JS_7_0"))], ephemeral: true });
+			if(msg) return msg.edit({ embeds: [(await generateErrorEmbed("Veuillez saisir une URL à vérifié","JS_7_1"))] });	
+		}
 
-        if (message.content === "Je suis suisse mais suis-je sexy?")
-          message.channel.send("Euh oui mais surtout gentil...");
-      }
-      if (message.content.toLowerCase().startsWith("siri"))
-        message.channel.send("Je suis Siri votre assistant personnel ", {
-          tts: true
-        });
+        // Dire si il n'y a pas de domaine
+        if(!link.includes(".")){
+			if(interaction) return interaction.reply({ embeds: [(await generateErrorEmbed("L'URL donné est invalide : elle ne contient pas d'extension de domaine (.com, .fr, etc)","JS_7_2"))], ephemeral: true });
+			if(msg) return msg.edit({ embeds: [(await generateErrorEmbed("L'URL donné est invalide : elle ne contient pas d'extension de domaine (.com, .fr, etc)","JS_7_3"))] });	
+		}
 
-      if (message.content.startsWith(prefix))
-        message.react(":elbot:817423861158510633");
+        // Ajouter https:// si besoin
+        if(!link.startsWith("https://") && !link.startsWith("http://")) var link = "https://" + link
+        if(link.startsWith("https://") || link.startsWith("http://")) var link = link
 
-      if (message.content.startsWith("elbot"))
-        message.react(":elbot:817423861158510633");
+		// Faire que Elbot réflechisse
+		deferEmbed.setDescription("Veuillez patienter : vérification Anti-Rickroll de `" + link + "`")
+		if(interaction) interaction.editReply({ embeds: [deferEmbed], ephemeral: true })
+		if(msg) msg.edit({ embeds: [deferEmbed] })
+		
+		// Faire une requête pour obtenir le code de la page
+		var code = await fetch(link, { method: 'GET', follow: 5, headers: { 'User-Agent': 'Mozilla/4.0 (Windows NT 999.9; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Safari fait un safari/90.0.0000.000 Safari fait un safari/5301.00' } })
+		.then(res => res.text())
+		.catch(async err => {
+			if(interaction) return interaction.reply({ embeds: [(await generateErrorEmbed("Erreur inconnu lors de la requête.\n```\n" + err + "\n```","JS_7_4"))], ephemeral: true });
+			if(msg) return msg.edit({ embeds: [(await generateErrorEmbed("Erreur inconnu lors de la requête.\n```\n" + err + "\n```","JS_7_5"))] });	
+		})
 
+		// Vérifier si c'est un rick roll
+		if(code.toString().toLowerCase().includes("never","gonna","give","you","up") || code.toString().toLowerCase().includes("rick","roll") || code.toString().toLowerCase().includes("never","gonna","desert","you")){
+			deferEmbed.setColor("#259b24")
+			deferEmbed.footer = null
+			deferEmbed.setDescription("Rick roll trouvé dans le lien : `" + link + "`\n\n[Rickdetect](https://github.com/johan-perso/rickdetect) - l'original")
+		} else {
+			deferEmbed.setColor("#b0120a")
+			deferEmbed.footer = null
+			deferEmbed.setDescription("Rick roll **non** trouvé dans le lien : `" + link + "`\n\n[Rickdetect](https://github.com/johan-perso/rickdetect) - l'original")
+		}
 
-      if (message.content.toLowerCase().includes("ubuntu"))
-        message.react("<:ubuntu:816654825248915487>");
+		// Répondre au message
+		if(interaction) interaction.editReply({ embeds: [deferEmbed], ephemeral: true })
+		if(msg) msg.edit({ embeds: [deferEmbed] })
+	}
+	// Commande "watchbot"
+	if(name === "watchbot"){
+		// Crée une ligne de boutons
+		var row = new Discord.MessageActionRow()
+		.addComponents(new Discord.MessageButton()
+			.setLabel('Elbot')
+			.setStyle('LINK')
+			.setURL("https://status.watchbot.app/bot/809344905674489866"))
+		.addComponents(new Discord.MessageButton()
+			.setLabel('Réveilleur')
+			.setStyle('LINK')
+			.setURL("https://status.watchbot.app/bot/852913553328439339"))
+		.addComponents(new Discord.MessageButton()
+			.setLabel('Anti Coupable v2')
+			.setStyle('LINK')
+			.setURL("https://status.watchbot.app/bot/789214685089759253"))
+		.addComponents(new Discord.MessageButton()
+			.setLabel('OmegaBOT')
+			.setStyle('LINK')
+			.setURL("https://status.watchbot.app/bot/550404246290563072"))
+		.addComponents(new Discord.MessageButton()
+			.setLabel('rmxBOT')
+			.setStyle('LINK')
+			.setDisabled()
+			.setURL("https://status.watchbot.app/bot/725455465701572740"))
 
-      if (message.content.toLowerCase().includes("linux c'est de la merde"))
-        message.channel.send(
-          "Regarde cette vidéo et on verra. \n https://www.youtube.com/watch?v=jdUXfsMTv7o"
-        );
-        
-        
-      if (message.content.toLowerCase().includes("ubuntu c'est de la merde"))
-        message.channel.send(
-          "Regarde cette vidéo et on verra. \n https://www.youtube.com/watch?v=jdUXfsMTv7o"
-        );
+		// Crée un embed
+		var embed = new Discord.MessageEmbed()
+		.setTitle("WatchBot")
+		.setDescription("Lequel de ces bots souhaitiez vous connaitre les incidents reportés ?")
+		.setColor("#33ff33")
 
-      if (message.content.toLowerCase().includes("Jannot Gaming"))
-        message.channel.send(
-          "https://tenor.com/view/potatoz-jano-gaming-nowagifs-gif-18818348"
-        );
+		// Envoyer le message
+		if(interaction) interaction.reply({ embeds: [embed], components: [row] }).catch(err => {})
+		if(message) message.channel.send({ embeds: [embed], components: [row] }).catch(err => {})
+	}
+	// Commande "help"
+	if(name === "help"){
+		// Crée un bouton
+		var button = new Discord.MessageActionRow()
+		.addComponents(new Discord.MessageButton()
+			.setLabel('Site d\'Elbot')
+			.setStyle('LINK')
+			.setURL("https://el2zay.is-a.dev/elbot"))
 
-      if (message.content.toLowerCase().includes("ubuntu"))
-        message.react(":ubuntu_dans_bassine:819657844940472421");
+		// Crée un embed
+		var embed = new Discord.MessageEmbed()
+		.setTitle("Page d'aide")
+		.setDescription("Pour ne pas se compliqué la vie car je ne peux pas h24 mettre à jour la commande (c'est faux il a juste la flemme), je vous invite à regarder [le site d'Elbot](https://el2zay.is-a.dev/elbot).")
+		.setColor("#33ff33")
 
-      if (message.content.toLowerCase().includes("merde"))
-        message.react("<:bassinechrotte:816630077038264321>");
+		// Envoyer le message
+		if(interaction) interaction.reply({ embeds: [embed], components: [button] }).catch(err => {})
+		if(message) message.channel.send({ embeds: [embed], components: [button] }).catch(err => {})
+	}
+	// Commande "brique"
+	if(name === "brique"){
+		// Mettre en attente l'interaction
+		if(interaction) interaction.deferReply({ ephemeral: true }).catch(err => {})
 
-      if (message.content.toLowerCase().includes("merde")) message.react("💩");
+		// Vérifier si on est dans un salon vocal
+			// Faire la vérification
+			if(interaction) var is = await isVocal(interaction)
+			if(message) var is = await isVocal(message)
 
-      if (message.content.startsWith("poubelle")) message.react("🚮");
+			// Donner une erreur
+			if(is === true && interaction) interaction.reply({ embeds: [is] }).catch(err => {})
+			if(is === true && message) message.channel.send({ embeds: [is] }).catch(err => {})
 
-      if (
-        message.content.startsWith("Tu parles de ce bot chiant et inutile là ?")
-      )
-        message.channel.send("Va remix tes pantoufles toi");
+			// Crée la queue
+				// Obtenir le salon où la commande a été faite
+				if(interaction) var textChannel = interaction.channel
+				if(message) var textChannel = message.channel
+				
+				// Obtenir le serveur où la commande a été faite
+				if(interaction) var guild = interaction.guild
+				if(message) var guild = message.guild
 
-      if (
-        message.content.startsWith("Ah nan ça c'est mon connard de proprio... ")
-      )
-        message.channel.send(
-          "https://tenor.com/view/ferme-ta-gueule-ta-gueule-tg-julien-lepers-lepers-gif-13251519"
-        );
+				// Et finalement... crée la queue
+				const queue = player.createQueue(guild, {
+					metadata: {
+						channel: textChannel
+					}
+				});
 
-      if (message.content.startsWith("Toi même"))
-        message.channel.send(
-          "https://tenor.com/view/nou-no-you-uno-uno-reverse-gif-21173861"
-        );
+			// Obtenir le salon vocal à rejoindre
+			if(interaction) var vocalChannel = interaction.member.voice.channel
+			if(message) var vocalChannel = message.member.voice.channel
+	
+			// Vérifier la connexion au salon vocal
+			try {
+				if (!queue.connection) await queue.connect(vocalChannel);
+			} catch {
+				queue.destroy();
+				if(interaction) return await interaction.editReply({ embeds: [(await generateErrorEmbed("Impossible de rejoindre votre salon vocal...","JS_9_0"))] });
+				if(message) return await message.channel.send({ embeds: [(await generateErrorEmbed("Impossible de rejoindre votre salon vocal...","JS_9_1"))] });
+			}
+	
+			// Obtenir la musique a joué
+				// La chercher
+				const track = await player.search("https://cdn.discordapp.com/attachments/794895791248244746/888503721191931934/video0.mp4", {
+					requestedBy: interaction.user || message.author
+				}).then(x => x.tracks[0]);
+				
+				// Si on l'a pas trouvé
+				if(!track && interaction) return await interaction.followUp({ embeds: [(await generateErrorEmbed("Son introuvable, veuillez contacter le créateur.","JS_9_2"))] });
+				if(!track && message) return await message.channel.send({ embeds: [(await generateErrorEmbed("Son introuvable, veuillez contacter le créateur.","JS_9_3"))] });
+	
+			// Ajouter la musique à la queue
+			queue.addTrack(track);
+			if(queue.playing === false) queue.play()
 
-      if (message.content.startsWith("bon"))
-        message.channel.send("BONBON :candy:");
+			// Dire que bah... ça prépare la musique
+			if(interaction) return await interaction.followUp({ content: `⏱️ | Chargement du **TITUTUTITI**` });
+			if(message) return await message.channel.send({ content: `⏱️ | Chargement du **TITUTUTITI**` });		
+	}
+	// Commande "heberger"
+	if(name === "heberger"){
+		// Envoyer le message
+		if(interaction) interaction.reply({ content: `Le code **NodeJS** est en ce moment hébergé sur **${require('os').platform}**`, ephemeral: true }).catch(err => {})
+		if(message) message.channel.send({ content: `Le code **NodeJS** est en ce moment hébergé sur **${require('os').platform}**` }).catch(err => {})
+	}
+	// Commande "info"
+	if(name === "info" || name === "lien" || name === "link" || name === "github" || name === "site"){
+		// Crée une ligne de boutons
+		var row = new Discord.MessageActionRow()
+		.addComponents(new Discord.MessageButton()
+			.setLabel('WatchBot')
+			.setStyle('LINK')
+			.setURL("https://status.watchbot.app/bot/809344905674489866"))
+		.addComponents(new Discord.MessageButton()
+			.setLabel('Mon site')
+			.setStyle('LINK')
+			.setURL("https://el2zay.is-a.dev/elbot"))
+		.addComponents(new Discord.MessageButton()
+			.setLabel('GitHub')
+			.setStyle('LINK')
+			.setURL("https://github.com/el2zay/elbot0712"))
+		.addComponents(new Discord.MessageButton()
+			.setLabel('Serveur Discord')
+			.setStyle('LINK')
+			.setURL("https://discord.gg/kQdkqBaE"))
 
-      if (message.content.startsWith("tutititutu"))
-        message.react(":Brique_telecom:808798700142460970");
+		// Envoyer le message
+		if(interaction) interaction.reply({ content: "(Ethan)Lien", components: [row] }).catch(err => {})
+		if(message) message.channel.send({ content: "(Ethan)Lien", components: [row] }).catch(err => {})
+	}
+	// Commande "pessi"
+	if(name === "pessi"){
+		// Crée une ligne de boutons
+		var row = new Discord.MessageActionRow()
+		.addComponents(new Discord.MessageButton()
+			.setLabel('Liste')
+			.setStyle('LINK')
+			.setURL("https://hasteb.herokuapp.com/raw/AfMR29mPPMj0RAzmbnGF"))
 
-      if (message.content.startsWith("tutititutu"))
-        message.channel.send(
-          "https://cdn.discordapp.com/emojis/816728856823201813.png?v=1"
-        );
+		// Crée un embed
+		var embed = new Discord.MessageEmbed()
+		.setTitle("Les mots des pessis (et pas le pepsi)")
+		.setDescription("culotté\npleure\nchiale\nchouine\ncouine\naboie\nmiaule\nboude\nbrûle\nhurle\ncrie\ncrève\npleurniche\nricane\njacasse\nagonise\nbeugle\nchuchote\nmurmure\nronfle\nsuffoque\nimplose\nexplose\nrugis\nsiffle\nronronne\ncaquette\nrenifle\nvis\nroucoule\nsouffre\nsoufle\ndort")
+		.setColor("#33ff33")
 
-      if (message.content.toLowerCase().includes("crotte"))
-        message.react("<:bassinechrotte:816630077038264321>");
+		// Envoyer le message
+		if(interaction) interaction.reply({ embeds: [embed], components: [row], ephemeral: true }).catch(err => {})
+		if(message) message.channel.send({ embeds: [embed], components: [row] }).catch(err => {})
+	}
+}
 
-      if (message.content.toLowerCase().includes("avira"))
-        message.channel.send("PARAPLUIIIIIIIIIIIIIIIIIIIIE @Johan");
+// Quand le bot reçois un message
+client.on('messageCreate', message => {
+	// Obtenir un argument et le contenu du message en minuscules
+	const args = message.content.slice(prefix.length).trim().split(' ');
+	const command = args.shift().toLowerCase();
+	const content = message.content.toLowerCase()
 
-      if (message.content.toLowerCase().includes("changez pour stickman"))
-        message.channel.send("*Mangez des stickmans");
+	// Transférer la commande vers une fonction SI LE MESSAGE COMMENCE PAR LE PREFIX
+	if(message.content.startsWith(prefix)) handleCommand(command, args, "", message)
 
-      if (message.content.toLowerCase().includes("apple"))
-        message.channel.send(
-          " https://tenor.com/view/lisa-simpsons-think-differently-gif-10459041"
-        );
+	// Si le message a été fait par moi même
+	if(message.author.id !== client.user.id) return;
 
-      if (message.content.toLowerCase().includes("avira"))
-        message.react(":avira:816654625683800074");
+	// Répondre à quelques messages...
+	if(content.includes("je suis suisse") && message.author.id !== "809344905674489866" && content !== "je suis suisse et je suis polie" && content !== "je suis suisse et j'ai les moyens" && content !== "je suis suisse mais suis-je sexy?") return message.reply("Mais quelle heure est-t-il ?")
+	if(content === "moi je sais") return message.reply("C'est propre ici, non ?")
+	if(content === "bah oui") return message.reply("Et l'or des nazis ?")
+	if(content === "steuplait") return message.reply("SUISSE\nAHAHAHAHA")
+	if(content === "je suis suisse et je suis polie") return message.reply("C'est bien")
+	if(content === "je suis suisse et j'ai les moyens") return message.reply("Youpi")
+	if(content === "je suis suisse mais suis-je sexy?") return message.reply("Euh oui mais surtout gentil...")
 
-      if (message.content.toLowerCase().includes("crotte")) message.react("💩");
+	if(content.startsWith(prefix) || content.startsWith("elbot")) message.react(":elbot:817423861158510633")
+	if(content.startsWith("ubuntu")) message.react(":ubuntu_dans_bassine:819657844940472421") && message.react("<:ubuntu:816654825248915487>")
+	if(content.startsWith("merde")) message.react("💩")
+	if(content.startsWith("poubelle")) message.react("🚮")
+	if(content.startsWith("baldi")) message.react(":baldi:859413939786612756")
+	if(content.startsWith("total")) message.react(":total:836981580157026304")
+	if(content.startsWith("oof")) message.react(":oof:836989811897532457")
 
-      if (message.content.toLowerCase().includes("caca")) message.react("💩");
+	if(content.startsWith("siri")) return message.reply("Je suis Siri, votre assistant personnel", { tts: true })
+	if(content.includes("ubuntu c'est de la merde") || content.includes("linux c'est de la merde")) return message.reply("Regarde cette vidéo et on verra.\nhttps://www.youtube.com/watch?v=jdUXfsMTv7o")
+	if(content.includes("jannot gaming")) return message.reply("https://tenor.com/view/potatoz-jano-gaming-nowagifs-gif-18818348")
+	if(content.includes("noice")) return message.reply("https://tenor.com/view/noice-nice-click-gif-8843762")
 
-      if (message.content.toLowerCase().includes("baldi"))
-        message.react(":baldi:859413939786612756");
+	if(content.startsWith("tu parles de ce bot chiant et inutile là ?")) return message.reply("Va remix tes pantoufles toi")
+	if(content.startsWith("ah nan ça c'est mon connard de proprio...")) return message.reply("https://tenor.com/view/ferme-ta-gueule-ta-gueule-tg-julien-lepers-lepers-gif-13251519")
+	if(content.startsWith("toi même")) return message.reply("https://tenor.com/view/nou-no-you-uno-uno-reverse-gif-21173861")
+	
+	if(content.includes("bon")) return message.reply("BONBON :candy:")
+	if(content.includes("avira")) return message.reply("PARAPLUIIIIIIIIIIIIIIIIIIIIE") && message.react(":avira:816654625683800074")
+	if(content.includes("apple")) return message.reply(" https://tenor.com/view/lisa-simpsons-think-differently-gif-10459041")
+	if(content.includes("tutititutu")) return message.reply("https://cdn.discordapp.com/emojis/816728856823201813.png?v=1") && message.react(":Brique_telecom:808798700142460970")
+	if(content.includes("bonjoir")) return message.reply("Hachoir")
+	if(content.includes("rmxbot")) return message.reply("Ptdr il est plus inutile que moi mais je l'aime bien")
+	if(content.includes("courgette")) return message.reply("Counnasse")
+	if(content.includes("ouille")) return message.reply("https://pbs.twimg.com/media/ETkK977X0AE3x-x.jpg")
 
-      if (message.content.toLowerCase().includes("total"))
-        message.react(":total:836981580157026304");
+	if (content.includes("<") && content.includes("@") && content.includes(client.user.id) && content.includes(">")) return message.channel.send("euuuh bonjour ? mon prefix c'est `e!`")
+})
 
-      if (message.content.startsWith("Noice"))
-        message.channel.send(
-          "https://tenor.com/view/noice-nice-click-gif-8843762"
-        );
-
-      if (
-        message.content.toLowerCase().includes("scratch") &&
-        message.content !== "Le code scratch fonctionne"
-      )
-        message.channel.send("Chat de merde");
-
-      if (message.content === "oof") message.react(":oof:836989811897532457");
-
-      if (message.content.toLowerCase().includes("bonjoir"))
-        message.channel.send("Hachoir");
-
-      if (message.content.toLowerCase().includes("rmxbot"))
-        message.channel.send(
-          "Ptdr il est plus inutile que moi mais je l'aime bien"
-        );
-
-      if (message.content.toLowerCase().includes("courgette"))
-        message.channel.send("Counnasse");
-
-      if (message.content.toLowerCase().includes("ouille"))
-        message.channel.send("https://pbs.twimg.com/media/ETkK977X0AE3x-x.jpg");
-
-        if (message.content === "e!ping") {
-          if (message.author.bot === true) return;
-          message.channel.send(
-            "Le ping pong c'est de la merde je préfère utiliser des briques comme raquettes mais en tout cas j'ai " +
-              client.ws.ping +
-              " ms (JS)"
-          );
-        }
-
-      })}
-      )}
-    
-    client.login(process.env.TOKEN)
+// Connecter le bot
+function connectBot(){ 
+client.login(process.env.TOKEN).catch(err => console.log(chalk.red("Impossible de se connecter à Discord : ") + err)) }
+connectBot()
