@@ -2,12 +2,15 @@ from asyncio.tasks import run_coroutine_threadsafe
 from operator import and_, ifloordiv, is_not
 import operator
 from typing import Text, Tuple
+from os import *
 from asyncio.futures import _FINISHED
 import discord
 import io, base64
 import json
+import auth
 from discord import user
 from discord import member
+from discord.webhook import Webhook, RequestsWebhookAdapter
 from discord import ActionRow, Button, ButtonStyle
 from discord import message
 from discord.channel import CategoryChannel
@@ -20,31 +23,32 @@ from discord_slash.model import ButtonStyle
 from discord_slash.utils.manage_components import *
 import asyncio
 import chalk
-import datetime
-#from Data.database_handler import DatabaseHandler
+from datetime import date
 import random
 from discord.ext.commands.errors import BotMissingPermissions, BotMissingRole
 from discord.utils import get
 from discord_slash.utils.manage_commands import create_option, create_choice
 import requests
-from dotenv import dotenv_values
-from dotenv import load_dotenv
 from discord import FFmpegPCMAudio
 from discord import TextChannel
 from requests.api import options
 from six import text_type
 import youtube_dl
-
+import tweepy
 
 intents = discord.Intents().default()
 intents.members = True
 
-bot = commands.Bot(command_prefix = "e!", description = "Tutititutu mais en Python", intents=intents)
+bot = commands.Bot(command_prefix = "e?", description = "Tutititutu mais en Python", intents=intents)
 slash = SlashCommand(bot, sync_commands=True)
 musics = {} 
 ytdl = youtube_dl.YoutubeDL()
-#database_handler = DatabaseHandler("database.db")
 
+
+# Supabase
+from supabase import create_client, Client
+
+supabase: Client = create_client(auth.supabase_url, auth.supabase_password)
 
 
 funFact = ["Elbot était créer de base pour diffuser seulement le tutitititutu sur un Channel du serveur Ubuntu le best",
@@ -56,7 +60,7 @@ funFact = ["Elbot était créer de base pour diffuser seulement le tutitititutu 
 "Le saviez-vous? Elbot a été abondoné quelques semaines, plus tard puis el2zay a commencé à le coder grâce à scratch (oui, oui) puis c'est mis au vrai code.",
 "Le saviez-vous? Johan et un peu Azrod ont poussé el2zay à me coder.",
 "Elbot est toujours en cours de développement et à chaque semaine des mise à jours.",
-"Je suis héberger sur glitch et sur la Freebox Delta de el2zay. (et un tout petit bout de code sur le Chrottebook de Johan)"]
+"Je suis héberger sur la Freebox Delta de el2zay."]
 
 
 status = ["Chante tutititutu tout en changeant pour Ubuntu",
@@ -64,7 +68,8 @@ status = ["Chante tutititutu tout en changeant pour Ubuntu",
 "Entrain d'être coder en Python",
 "Le code est désormais en full Python 🐍👀",
 "Petit conseil ne dit pas mon nom dans un serveur où y'a moi et rmxbot",
-"Les commandes slash sont entrain d'être coder."]
+"Les commandes slash sont entrain d'être coder.",
+":S"]
 
 pessilist = "culotté\npleure\nchiale\nchouine\ncouine\naboie\nmiaule\nboude\nbrûle\nhurle\ncrie\ncrève\npleurniche\nricane\njacasse\nagonise\nbeugle\nchuchote\nmurmure\nronfle\nsuffoque\nimplose\nexplose\nrugis\nsiffle\nronronne\ncaquette\nrenifle\nvis\nroucoule\nsouffre\nsoufle\ndort"
 
@@ -87,13 +92,13 @@ elbot = 809344905674489866
 
 @bot.event
 async def on_ready():
-    #check_for_unmute.start()
-    print(chalk.green ("Le code Python est allumé !"))
+    print(chalk.green (f"Le code Python est allumé ! {bot.user.name}"))
     changeStatus.start()
 @tasks.loop(seconds = 5)
 async def changeStatus():
 	game = discord.Game(random.choice(status))
 	await bot.change_presence(status = discord.Status.idle, activity = game)
+
 
 async def getVerifiéRole(ctx):
     roles = ctx.guild.roles
@@ -101,64 +106,81 @@ async def getVerifiéRole(ctx):
         if role.name == "👤 Membre 👤":
             return role
 
-@bot.event
-async def on_member_join(ctx, member : discord.Member = None):
-    if ctx.guild.id == 865914342041714700:
-        channel = bot.get_channel(865914342545424407)
-        await channel.send('bienvenue')
-    elif ctx.guild.id == 881488037979250768:
-        verifiérole = await getVerifiéRole(ctx)
-        await member.add_roles(verifiérole)
-        channel = bot.get_channel(905370708530561034)
-        await channel.send(f"Bienvenue à toi {member} sur le serveur **{ctx.guild.name}**\nNous sommes désormais {ctx.guild.member_count} 🎉 \nN'oublie pas de **lire les règles** pour éviter un **ban/kick/mute** et de lire les informations pour tout simplifier.\nJ'espère que tu vas kiffer 😁")
+async def guildID(ctx):
+    ctx.guild.id
+async def guildName(ctx):
+    ctx.guild.name
+async def guildCount(ctx):
+    ctx.guild.member_count
+
 
 @bot.event
-async def on_member_remove(ctx, member : discord.Member = None):
-    if ctx.guild.id == 881488037979250768:
+async def on_member_join(member):
+    if guildID == 865914342041714700:
+        #verifiérole = await getVerifiéRole(ctx)
+        channel = bot.get_channel(865914342545424407)
+        await channel.send(f"Bienvenue à toi {member} sur le serveur **{guildName}**\nNous sommes désormais {guildCount} 🎉 ")
+
+    elif guildID == 881488037979250768:
+        #verifiérole = await getVerifiéRole(ctx)
+        #await member.add_roles(verifiérole)
         channel = bot.get_channel(905370708530561034)
-        await channel.send(f"{member} nous a malheureusement quitté\nNous sommes désormais {ctx.guild.member_count}")
+        await channel.send(f"Bienvenue à toi {member} sur le serveur **{guildName}**\nNous sommes désormais {guildCount} 🎉 \nN'oublie pas de **lire les règles** pour éviter un **ban/kick/mute** et de lire les informations pour tout simplifier.\nJ'espère que tu vas kiffer 😁")
+
+@bot.event
+async def on_member_remove(member):
+    if guildID == 865914342041714700:
+        channel = bot.get_channel(865914342545424407)
+        await channel.send(f"{member} nous a malheureusement quitté\nNous sommes désormais {guildCount}")
+
+    elif guildID == 881488037979250768:
+        channel = bot.get_channel(905370708530561034)
+        await channel.send(f"{member} nous a malheureusement quitté\nNous sommes désormais {guildCount}")
 
 
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         embed=discord.Embed(title="Commande inexistante", description="Cette commande n'existe pas. Vérifiez que vous n'avez pas fait d'erreur de frappe. Sinon vous pouvez consultez la page d'aide https://el2zay.is-a.dev/elbot/ ", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+        embed.set_footer(text="`e!contact` si vous avez un problème")
         await ctx.message.reply(embed=embed)
         print(chalk.red(f"ERREUR: La commande {ctx.message.content} qui a été faite par {ctx.author} sur le serveur {ctx.guild.name} n'existe pas !"))
 
     elif isinstance(error, commands.MissingRequiredArgument):
         embed=discord.Embed(title="Erreur", description="Un argument manque (nombre, mot/lettres etc...)\nMerci de réessayer avec un argument.\nCode Erreur :  Erreur N°1", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+        embed.set_footer(text="`e!contact` si vous avez un problème")
         await ctx.message.reply(embed=embed)
         print(chalk.red(f"ERREUR: La commande {ctx.message.content} faite par {ctx.author.name} sur le serveur {ctx.guild.name} manquait un argument"))
 
     elif isinstance(error, commands.ChannelNotReadable):
         embed=discord.Embed(title="Erreur", description="Vous n'êtes pas dans un salon pour jouer la musique", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+        embed.set_footer(text="`e!contact` si vous avez un problème")
+
         await ctx.message.reply(embed=embed)
         print(chalk.red(f"ERREUR: La commande {ctx.message.content} faite par {ctx.author.name} sur le serveur {ctx.guild.name} manquait un argument"))
     elif isinstance(error, commands.MissingPermissions):
         embed=discord.Embed(title="Erreur", description="Vous n'avez pas les permissions requises. Demandez à un administrateur ou au fondateur du serveur.\nCode Erreur : Erreur N°2", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+        embed.set_footer(text="`e!contact` si vous avez un problème")
         await ctx.message.reply(embed=embed)
         print(chalk.red(f"ERREUR: {ctx.author.name} a fait la commande {ctx.message.content} qu'il n'avait pas l'autorisation de faire sur le serveur {ctx.guild.name} !"))
 
     elif isinstance(error, discord.Forbidden):
         embed=discord.Embed(title="Erreur", description="Je n'ai pas l'autorisation pour faire cette commande. \nEssayez de vérifier les paramètres des rôles sur le serveur.\nCode erreur : Erreur N°3", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+        embed.set_footer(text="`e!contact` si vous avez un problème")
         await ctx.message.reply(embed=embed)
         print(chalk.red(f"ERREUR: {ctx.author.name} a fait la commande {ctx.message.content} sur le serveur {ctx.guild.name} où je n'avais pas l'autorisation de la faire."))
     
     else:
         embed=discord.Embed(title="Erreur console ", description=f"Erreur de la console: `{error}` ", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+        embed.set_footer(text="`e!contact` si vous avez un problème")
         await ctx.reply(embed = embed)
         print(chalk.red(error))
-
-    
-
-
 
 
 #Message
@@ -190,7 +212,7 @@ async def on_message(message):
     if message.content == "BONBON 🍬" and message.author.id != elbot:
         await message.add_reaction("❤️")
 
-    if (message.content.lower() == "oof"): await message.add_reaction(":oof:836989811897532457")
+    if (message.content.lower() == "oof"): await message.add_reaction(":oof:922051930992304159")
 
 
     #rmxbot
@@ -204,15 +226,11 @@ async def on_message(message):
 
     #Lower case
 
-    lowerMessage = message.content.lower()
-    if lowerMessage.find("elbot") != -1:
-        await message.add_reaction(":elbot:817423861158510633")
-
 
     lowerMessage = message.content.lower()
     if lowerMessage.find("ubuntu") != -1:
-        await message.add_reaction(":ubuntu:816654825248915487")
-        await message.add_reaction(":ubuntu_dans_bassine:819657844940472421")
+        await message.add_reaction(":ubuntu:922047121534906430") #maj
+        await message.add_reaction(":ubuntudansbassine:922047737153855550") #maj
 
     lowerMessage = message.content.lower()
     if lowerMessage.find("linux c'est de la merde") != -1 or lowerMessage.find("ubuntu c'est de la merde") != -1:
@@ -225,17 +243,17 @@ async def on_message(message):
     lowerMessage = message.content.lower()
     if lowerMessage.find("merde") != -1:
         await message.add_reaction("💩")
-        await message.add_reaction(":bassinechrotte:816630077038264321")
+        await message.add_reaction(":bassinechrotte:922048937995677697") #maj
     lowerMessage = message.content.lower()
     if lowerMessage.find("crotte") != -1:
         await message.add_reaction("💩")
-        await message.add_reaction(":bassinechrotte:816630077038264321")
+        await message.add_reaction(":bassinechrotte:922048937995677697")#maj
     if lowerMessage.find("caca") != -1:
         await message.add_reaction("💩")
-        await message.add_reaction(":bassinechrotte:816630077038264321")
+        await message.add_reaction(":bassinechrotte:922048937995677697")#maj
     if lowerMessage.find("chrotte") != -1:
         await message.add_reaction("💩")
-        await message.add_reaction(":bassinechrotte:816630077038264321")
+        await message.add_reaction(":bassinechrotte:922048937995677697")#maj
 
     lowerMessage = message.content.lower()
     if lowerMessage.find("poubelle") != -1:
@@ -243,12 +261,12 @@ async def on_message(message):
 
     lowerMessage = message.content.lower()
     if lowerMessage.find("tutititutu") != -1:
-        await message.add_reaction(":Brique_telecom:808798700142460970")
+        await message.add_reaction(":briquetelecom:922049674305740862") #maj
         await message.reply("https://cdn.discordapp.com/emojis/816728856823201813.png?v=1")
 
     lowerMessage = message.content.lower()
     if lowerMessage.find("avira") != -1:
-        await message.add_reaction(":avira:816654625683800074")
+        await message.add_reaction(":avira:922050319557480481")
 
     lowerMessage = message.content.lower()
     if lowerMessage.find("changez pour stickman") != -1:
@@ -259,13 +277,15 @@ async def on_message(message):
         await message.reply(" https://tenor.com/view/lisa-simpsons-think-differently-gif-10459041")
         await message.add_reaction("🍎")
 
+    if message.content==":S" and message.author.id != 809344905674489866:
+        await message.add_reaction("❤️")
     lowerMessage = message.content.lower()
     if lowerMessage.find("baldi") != -1:
-        await message.add_reaction(":baldi:859413939786612756")
+        await message.add_reaction(":baldi:922051105582628864") #maj
 
     lowerMessage = message.content.lower()
     if lowerMessage.find("total") != -1:
-        await message.add_reaction(":total:836981580157026304")
+        await message.add_reaction(":total:922051358985707590") #maj
 
     lowerMessage = message.content.lower()
     if lowerMessage.find("noice") != -1:
@@ -292,11 +312,10 @@ async def on_message(message):
         await message.reply("https://pbs.twimg.com/media/ETkK977X0AE3x-x.jpg")
 
 
+
 #Fin Message
 
-
-
-@bot.command(aliases=['serverinfo'])  #SLASH OK Site ok
+@bot.command(aliases=['serverinfo']) #SLASH OK Site ok
 async def infoserver(ctx):
     server = ctx.guild
     numberOfTextChannels = len(server.text_channels) #ok
@@ -344,7 +363,6 @@ async def userinfo(ctx, *, member: discord.Member=None): #site ok
     if not member:
         member = ctx.message.author
     username = member.name
-    userAvatar = member.avatar_url
     userID = member.id
     usercreation = member.created_at.strftime("%d/%m/%Y à %H:%M")
     rolelist = [r.mention for r in member.roles if r != ctx.guild.default_role]
@@ -415,7 +433,7 @@ corail = 0xf1263f
 async def embed(ctx, *,args): #site ok
     if args.split("§")[3].lower() != "blurple" and args.split("§")[3].lower() != "red" and args.split("§")[3].lower() != "rouge" and args.split("§")[3].lower() != "blue" and args.split("§")[3].lower() != "bleu" and  args.split("§")[3].lower() != "twitter" and args.split("§")[3].lower() != "cyan" and args.split("§")[3].lower() != "turquoise" and args.split("§")[3].lower() != "corail" and args.split("§")[3].lower() != "lime" and args.split("§")[3].lower() != "citron" and args.split("§")[3].lower() != "green" and args.split("§")[3].lower() != "vert" and args.split("§")[3].lower() != "yellow" and args.split("§")[3].lower() != "jaune" and args.split("§")[3].lower() != "black" and args.split("§")[3].lower() != "noir" and args.split("§")[3].lower() != "grey" and args.split("§")[3].lower() != "gris" and args.split("§")[3].lower() != "brown" and args.split("§")[3].lower() != "marron" and args.split("§")[3].lower() != "orange":
         embed=discord.Embed(title="Couleur inexistante", description=f"Cette couleur n'existe pas. Vérifiez que vous n'avez pas fait d'erreur de frappe. Sinon n'hésitez pas à faire la commande e!list_color ou à consulter la page d'aide.https://el2zay.is-a.dev/elbot/", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
         await ctx.reply(embed=embed)
         print(chalk.red(f"ERREUR: La couleur choisie par {ctx.author} sur le serveur {ctx.guild.name} n'existe pas !"))
         return
@@ -475,6 +493,22 @@ async def list_color(ctx):
     embed = discord.Embed(title = "Liste des couleurs embed", description = "blurple\nred/rouge\nblue/bleu\ntwitter\ncyan/turquoise\ncorail\nlime/citron\ngreen-vert\nyellow-jaune\nblack/noir\ngrey/gris\nbrown/marron\norange\n\nLa couleur que vous soihaitez n'est pas disponible? Pas de panique faites la commande e!contact et dites la couleur que vous voulez que j'ajoute.\nVous serez prévenu quand elle sera ajoutée.", color = cyan)
     await ctx.reply(embed = embed)
 
+
+
+# @bot.command()
+# async def fake(ctx, *texte):
+#     if ctx.message.webhook_id:
+#         return
+#     fchannel = bot.get_channel(865916197722390538)
+#     tchannel = bot.get_channel(865914342545424407)
+#     webhook_id = 912025118010671116
+#     hooks = await tchannel.webhooks()
+#     hook = get(hooks, id=webhook_id)  
+#     if ctx.channel == fchannel:
+#         webhook = await ctx.channel.create_webhook(name='test')
+        # msg = await webhook.send(content= texte, username=ctx.author.name, avatar = ctx.author.avatar_url, wait = True)
+
+
 @bot.command() #site ok
 async def say(ctx, *texte):
     if not texte:
@@ -501,7 +535,7 @@ async def say(ctx, *texte):
 @bot.command()
 async def sondage(ctx, *, texte = None): #site ok
     if texte is None:
-        texte = "Aucun texte"
+        texte = "."
         texte = " ".join(texte)
     embed = discord.Embed(title = f"Sondage de {ctx.message.author} ", description = f"{texte}", color=red)
     message = await ctx.send(embed = embed)
@@ -511,16 +545,16 @@ async def sondage(ctx, *, texte = None): #site ok
     await message.add_reaction("❌")
 
 
+
 @bot.command(pass_context = True)
 async def contact(ctx, *text): #site ok
     user = bot.get_user(727572859727380531)
-    await user.send(" ".join(text))
+    await user.send(f"{ctx.author} vous a dit sur le serveur {ctx.guild.name} " + (" ".join (text)))
 
 @bot.command(pass_context = True)
-async def dm(ctx, id : int, *text : str): #site ok
+async def dm(id : int, *text : None): #site ok
     user = bot.get_user(id)
     await user.send(" ".join(text))
-
 
 
 @bot.command() #site ok
@@ -629,12 +663,16 @@ async def kick(ctx, user : discord.User, *, reason = None): #site ok
     await user.send(embed = embed)
 
 
-
-
-#https://www.color-hex.com
-#ne pas oublier le 0x avant le code de la couleur
-
-
+@bot.command()
+async def calc(ctx, a : float,b, c : float): #site ok // Commande la moins optimisé du code
+    if b == "+" :
+        await ctx.reply(a+c)
+    elif b == "-":
+        await ctx.reply(a-c)
+    elif b == "/":
+        await ctx.reply(a / c)
+    elif b == "*" or b == "x":
+        await ctx.reply(a*c)
 
 
 @bot.command()
@@ -661,8 +699,6 @@ async def unlock(ctx): #site ok
     await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
     embed = discord.Embed(title = "Unlock", description = f"Le salon, {ctx.message.channel} est désormais déverouillé 🔓", color=0x0000ff)
     await ctx.send(embed = embed)
-
-
 
 
 	
@@ -704,8 +740,12 @@ async def unban(ctx, user, *reason): #site ok
 def isOwner(ctx):
  return ctx.message.author.id == 727572859727380531
 
+
 def elWatchServ(ctx):
  return ctx.guild.id == 881488037979250768
+
+def johan(ctx):
+ return ctx.message.author.id == 277825082334773251
 
 
 
@@ -796,7 +836,7 @@ async def cuisiner(ctx): #site ok
        recette = await bot.wait_for("message", timeout = 10, check = checkMessage)
     except:
         embed=discord.Embed(title="Erreur: TIMEOUUUUUUUUT", description="Cela fait plus de 10 secondes que la commade a été lancé et que vous n'avez pas répondu à cette commande. \nVous pouvez réessayer en recommençant la commande.\n Erreur N°5 ", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
         await ctx.message.reply(embed=embed)
     message = await ctx.send(f"La préparation de {recette.content} va commencer. Veuillez valider en réagissant avec ✅. Sinon réagissez avec ❌")
     await message.add_reaction("✅")
@@ -812,13 +852,24 @@ async def cuisiner(ctx): #site ok
             await ctx.send("La recette a bien été annulé.")
     except:
         embed=discord.Embed(title="Erreur: TIMEOUUUUUUUUT", description="Cela fait plus de 10 secondes que la commade a été lancé et que vous n'avez pas répondu à cette commande. \nVous pouvez réessayer en recommençant la commande.\n Erreur N°5 ", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
         await ctx.message.reply(embed=embed)
 
 
 @bot.command(aliases=['code'])
 async def github(ctx): #site ok
-    await ctx.reply("Voici le lien de mon code sur Github\nhttps://bit.ly/33sfsMv")
+    buttons = [
+        create_button(url='https://github.com/el2zay/elbot',
+                label="Github",
+                style=ButtonStyle.URL,
+        ),
+        create_button(url='https://el2zay.is-a.dev/elbot',
+                label="Site",
+                style=ButtonStyle.URL,
+        )
+        ]
+    action_row = create_actionrow(*buttons)
+    fait_choix = await ctx.send("Voici le Github et le site", components=[action_row])
 
 
 @bot.command() #site ok
@@ -902,7 +953,7 @@ async def sayticket(ctx):
 async def ticket(ctx, user: discord.Member=False): #site ok
     if ctx.guild.id != 881488037979250768:
         embed=discord.Embed(title="Erreur", description="Cette commande n'existe pas sur ce serveur.\nMerci de réessayer sur un serveur où la commande e!ticket est disponible.\nCode Erreur:  Erreur N°6", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
         await ctx.message.reply(embed=embed)
     elif ctx.guild.id == 881488037979250768:
         select = create_select(
@@ -934,8 +985,11 @@ async def ticket(ctx, user: discord.Member=False): #site ok
     ctx.guild.me: discord.PermissionOverwrite(read_messages=False)
 }
             # Crée le salon
-            await ctx.guild.create_text_channel(name =  f"ticket-{ctx.message.author.name}-1", category = category, overwrites=overwrites)
-        embed=discord.Embed(title="Ticket", description="Merci de bien vouloir mettre ces informations pour éviter toute perte de temps.\n-Nom du bot\n-ID du bot\n-Lien d'invitation du bot **SANS** les autorisations admin.\n\nNous vous recontacterons dès que votre bot a été ajouter à la base de données.", color=0xff0000)
+            channel = await ctx.guild.create_text_channel(name =  f"ticket-{ctx.message.author.name}-1", category = category, overwrites=overwrites)
+            #Envoyer un message d'information dans le ticket
+        embed=discord.Embed(title="Ticket \"Ajouter son bot\"", description="Merci de bien vouloir mettre ces informations pour éviter toute perte de temps.\n-Nom du bot\n-ID du bot\n-Lien d'invitation du bot **SANS** les autorisations admin.\n\nNous vous recontacterons dès que votre bot a été ajouter à la base de données.", color=0xff0000)
+        await channel.send(embed = embed)
+        #Envoyer un MP à el2zay 
         user = bot.get_user(727572859727380531)
         await user.send(f"{ctx.author} a envoyé une demande d'ajout de son bot.\nticket-{ctx.message.author.name}-1")
 
@@ -971,18 +1025,22 @@ async def ticket(ctx, user: discord.Member=False): #site ok
 
 
 @bot.command()
-async def close(ctx): #site ok
-    if ctx.guild.id == 881488037979250768 and discord.utils.get(ctx.guild.categories, name='ticket'):
-        await ctx.channel.delete()
+async def close(ctx):
+    if ctx.guild.id == 881488037979250768 and ctx.channel.category_id == 901452596638789634:
+        return await ctx.channel.delete()
+    else:
+        return await ctx.send(content=f"Ce salon n'est pas un ticket et ne peut être fermé")
 
     
-
+@bot.command()
+async def reverse(ctx):
+    await ctx.send("https://tenor.com/view/power-legendary-reverse-card-econowise-reverse-card-legendary-uno-reverse-card-uno-legendary-reverse-card-gif-23531292")
 
 
 @bot.command()
 async def ping(ctx): #site ok 
     await ctx.send(f"Le ping pong c'est de la merde je préfère utiliser des briques comme raquettes mais en tout cas j'ai {round(bot.latency * 1000)}ms (PY)")
-    
+
 @bot.command(aliases=['minuteur'])
 async def timer(ctx, secondes : int): #site ok
     await ctx.reply(f"Votre minuteur de {secondes} secondes est lancé vous serez prévenu par MP lorsque le temps s'écoulera ⏲")
@@ -999,10 +1057,7 @@ async def clear(ctx, nombre : int): #site ok
 
     if (nombre > 1 and nombre and nombre < 20 or nombre == 20):
         await ctx.channel.purge(limit = nombre + 1) and await ctx.send(f"{ctx.author.name} a supprimé {nombre} messages.")
-        await asyncio.sleep(3)
-        await ctx.channel.purge(1)
     if (nombre > 20):
-        await ctx.send (f"ATTENTION!!! Souhaites-tu vraiment clear {nombre} de message?")
         buttons = [
             create_button(
                 style=ButtonStyle.blue,
@@ -1016,14 +1071,14 @@ async def clear(ctx, nombre : int): #site ok
             )
         ]
         action_row = create_actionrow(*buttons)
-        fait_choix = await ctx.send("Faites votre choix !", components=[action_row])
+        fait_choix = await ctx.send(f"ATTENTION!!! Souhaites-tu vraiment clear {nombre} de message?", components=[action_row])
 
         def check(m):
             return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
 
         button_ctx = await wait_for_component(bot, components=action_row, check=check)
         if button_ctx.custom_id == "oui":
-            await ctx.channel.purge(limit = nombre + 1) and await ctx.send(f"{ctx.author.name} a supprimé {nombre} messages.") 
+            await ctx.channel.purge(limit = nombre + 1)
         if button_ctx.custom_id == "non":
             await button_ctx.edit_origin(content="Aucun message n'a été clear.")
 
@@ -1033,8 +1088,6 @@ async def help(ctx):
     embed = discord.Embed(title = "Commande help", description = f"Mot du créateur du bot aka el2zay: BONJOUR {ctx.author.name} TU AS ESSAYÉ DE FAIRE LA COMMANDE HELP MAIS ELLE N'EST PAS DISPONIBLE POUR LE MOMENT?????\n T'inquiètes pas pour l'instant je t'invite à regarder le site de elbot où tu trouveras tout ce que vous t'as besoin. https://el2zay.is-a.dev/elbot \n(Une nouvelle commande help beaucoup plus complète que l'ancienne sera bientôt disponible avec des exemples et tout.)", color=blurple)
     embed.set_footer(text = "(Mais si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà")
     await ctx.reply(embed = embed)
-
-
 
 @bot.command()
 async def invite(ctx): #site ok
@@ -1127,46 +1180,6 @@ async def number(ctx, limite_inferieure, limite_superieure):
      num = random.randint(limite_inferieure, limite_superieure)
      await ctx.send(f"**{num}**")
 guild_ids = [865914342041714700]
-@slash.slash(name="embed", description="Créer un embed.", options=[
-    create_option(name="titre", description="Définir le titre.", option_type=3, required= True),
-    create_option(name="description", description="Définir la description.", option_type=3, required= True),
-    create_option(name="footer", description="Définir le footer.", option_type=3, required= False),
-    create_option(name="couleur", description="Définir la couleur.", option_type=3, required= False),
-])
-async def embed(ctx, *,args):
-    if "blurple" in args[3].lower():
-        color = blurple
-    elif "red" or "rouge" in args[3].lower():
-        color = red
-    elif "blue" or "bleu" in args[3].lower():
-        color = blue
-    elif "twitter" in args.split("§")[3].lower():
-        color = 0x2986cc
-    elif "cyan" or "turquoise" in args.split("§")[3].lower():
-        color = cyan
-    elif "corail" in args.split("§")[3].lower():
-        color = corail
-    elif "lime" or "citron" in args.split("§")[3].lower():
-        color = 0x00ff23
-    elif "green" or "vert" in args.split("§")[3].lower():
-        color = 0x008000
-    elif "yellow" or "jaune" in args.split("§")[3].lower():
-        color = 0xffff00
-    elif "black" or "noir" in args.split("§")[3].lower():
-        color = 0x000000
-    elif "grey" or "gris" in args.split("§")[3].lower():
-        color = 0x808080
-    elif "brown" or "marron" in args.split("§")[3].lower():
-        color = 0xb45f06
-    elif "orange" in args.split("§")[3].lower():
-        color = 0xffa500
-
-
-
-    embed = discord.Embed(title = args.split("§")[0], description = args.split("§")[1], color = color)
-    embed.set_author(name = ctx.author.name, icon_url = ctx.author.avatar_url) #url = "lien" 
-    embed.set_footer(text = args.split("§")[2])
-    await ctx.send (embed = embed)
 @slash.slash(name="infoserver", description="Pour connaitre les informations sur ce serveur")
 async def infoserver(ctx): #site ok
     server = ctx.guild
@@ -1221,13 +1234,11 @@ async def funfact(ctx): #site ok
  await ctx.send(random.choice(funFact))
 
 #Twitter
+#Envoyer un tweet
 
-from tweepy.auth import OAuthHandler
-
-
-@bot.command()
+@bot.command(aliases=["twitter"])
 @commands.check(isOwner)
-async def twitter(ctx, *texte):
+async def tweet(ctx, *texte):
     import auth
     api, auth = auth.auth()
     texte = " ".join(texte)
@@ -1235,7 +1246,6 @@ async def twitter(ctx, *texte):
     embed = discord.Embed(title = "Tweet envoyé", description = "Votre tweet a été envoyé!", color=0x2986cc)
     embed.set_author(name = "ubuntulebest", icon_url = "https://pbs.twimg.com/profile_images/1390336237039403008/45vvjcIo_400x400.jpg", url = "https://twitter.com/ubuntulebest" )
     await ctx.send(embed = embed)
-
 
 
 #fin twitter
@@ -1248,7 +1258,7 @@ async def removebg(ctx, text): #site ok
             'image_url': (text),
             'size': 'auto'
         },
-        headers = { 'X-Api-Key': "APIKEY" , 'Accept': 'application/json' },
+        headers = { 'X-Api-Key': auth.removebg , 'Accept': 'application/json' },
     )
     if response.status_code == requests.codes.ok:
         data = json.loads(response.text)
@@ -1257,13 +1267,133 @@ async def removebg(ctx, text): #site ok
     else:
         print(chalk.red(f"Error:, {response.status_code, response.text}"))
         embed=discord.Embed(title="Erreur inconnue", description=f"Erreur console {response.status_code, response.text}", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/879752415400837120/elbot-triste.png")
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+        embed.set_footer(text="`e!contact` si vous avez un problème")
         await ctx.message.reply(embed=embed)
 
 
 #Fin de removebg
+#Database    
+
+@bot.command(aliases=['add_birthday','set_birthday','birthday_set'])
+async def birthday_add(ctx, day : int, month : str, year : int = None):
+    # Vérifier si la date est valide - jour de naissance
+    if day < 1 or day > 31:
+        return await ctx.reply("Erreur vous n'avez pas sélectionner un jour valide") 
+
+    # Vérifier si la date est valide - mois de naissance
+    if month != "janvier" and month != "février" and month != "mars" and month != "avril" and month != "mai" and month != "juin" and month != "juillet" and month != "août" and month != "septembre" and month != "octobre" and month != "novembre" and month != "décembre" and month != "decembre":
+        return await ctx.reply("Erreur vous n'avez pas sélectionner un mois valide")
+
+    # Vérifier si la date est valide - année de naissance
+    if year:
+        if year < 1900 or year > 2021:
+            return await ctx.reply("Erreur vous n'avez pas sélectionner une année invalide.")
+
+    # Modifier l'argument si il n'y a pas d'année
+    if not year:
+        args = f"{day} {month}" 
+    else:
+        args = f"{day} {month} {year}"
+
+    # Dire que la vérification est en cours
+    msg = await ctx.reply(f'<a:chargement:922054172734550027> Vérification en cours... veuillez patienter. <a:chargement:922054172734550027>')
+
+    # Vérifier une date impossible/invalide
+    if args.startswith("30 janvier") or args.startswith ("30 février") or args.startswith ("31 février") or args.startswith("31 avril") or args.startswith ("31 juin") or args.startswith ("31 septembre") or args.startswith ("31 novembre"):
+        return await msg.edit(content="Erreur vous n'avez pas saisi une date invalide.")
+
+    # Vérifier si une date est déjà entré dans la BDD
+    birthday = supabase.table('birthday').select('user_id, guild_id, birthday_date_ddmmyyyy').eq('user_id', str(ctx.message.author.id)).eq('guild_id', str(ctx.guild.id)).execute()
+
+    # Obtenir la date au format DD/MM/YYYY
+    birthday_date_ddmmyyyy = args.split(" ")
+    birthday_date_ddmmyyyy = "/".join(birthday_date_ddmmyyyy)
+    birthday_date_ddmmyyyy = birthday_date_ddmmyyyy.replace("janvier","01").replace("février","02").replace("fevrier","02").replace("mars","03").replace("avril","04").replace("mai","05").replace("juin","06").replace("juillet","07").replace("aout","08").replace("août","08").replace("septembre","09").replace("octobre","10").replace("novembre","11").replace("décembre","12").replace("decembre","12")
+
+    # Si une date est déjà enregistré (oui oui le "not" est voulu)
+    if(not str(birthday['data']) == "[]"):
+        # Dire que la modification est en cours...
+        await msg.edit(content=f'<a:chargement:922054172734550027> Veuillez patienter pendant la modification de votre date de naissance... <a:chargement:922054172734550027>')
+
+        # Modifier dans Supabase la date de naissance
+        supabase.table('birthday').update({ 'birthday_date_france': args, 'birthday_date_ddmmyyyy': birthday_date_ddmmyyyy }).eq('user_id', str(ctx.message.author.id)).eq('guild_id', str(ctx.guild.id)).execute()
+        
+        # Dire que la modification est terminé
+        return await msg.edit(content=f'Votre date de naissance a été modifié avec succès ✅ !')
+    else:
+        # Dire que l'ajout est en cours
+        await msg.edit(content=f'<a:chargement:922054172734550027> Veuillez patienter pendant l\'ajout de votre date de naissance... <a:chargement:922054172734550027>')
+        
+        # Ajouter dans Supabase dans la date de naissance
+        setBirthday = supabase.table('birthday').insert({ 'user_id': ctx.message.author.id, 'username': ctx.author.name, 'guild_id': ctx.guild.id, 'guild_name': ctx.guild.name, 'birthday_date_france': args, 'birthday_date_ddmmyyyy': birthday_date_ddmmyyyy }).execute()
+        
+        # Une fois l'ajout dans Supabase terminé
+        if(setBirthday['status_code'] == 201):
+            await msg.edit(content=f'Ajout de votre date de naissance effectué ✅ !')
+        else:
+            await msg.edit(content=f"Impossible d\'ajouter votre date de naissance ❌ !\n```\n{setBirthday['data']['message']}\n```")
+        return
+
+@bot.command(aliases=['birthdays','list_birthday'])
+async def birthday(ctx, member : discord.Member = None):
+    # Si aucune personne n'est mentionnée
+    if (not member):
+        # Obtenir la liste des anniversaires sur le serveur
+        birthdayList = supabase.table('birthday').select('user_id, guild_id, birthday_date_france').eq('guild_id', str(ctx.guild.id)).execute()
+
+        # Si aucun anniversaire
+        if(str(birthdayList['data']) == "[]"):
+            embed=discord.Embed(title="Aucun anniversaire", description="Aucun anniversaire n'est enregistrer sur ce serveur.\nFaites la commande `e!set_birthday <date>` pour enregistrer la votre !\nSinon vous pouvez consultez la page d'aide https://el2zay.is-a.dev/elbot/", color=0xff0000)
+            embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+            await ctx.message.reply(embed=embed)
+            return print(chalk.red(f"ERREUR: {ctx.author} a essayé de faire la commande birthday sur le serveur {ctx.guild.name} alors que personne n'a enregistrer sa date d'anniversaire !"))
+
+        # A chaque anniversaire dans la liste
+        allBirthdayMsg = ""
+        for birthday in birthdayList['data']:
+            allBirthdayMsg += f'🎉 **{bot.get_user(int(birthday["user_id"]))}** est né le **{birthday["birthday_date_france"]}** 🎉\n' 
+
+        # Crée un embed
+        embed=discord.Embed(title=f"Liste des anniversaires", description=allBirthdayMsg, color=cyan)
+
+        # Si aucune date n'a été enregistrer pour l'auteur du message, ajouter un footer
+        birthdayExist = supabase.table('birthday').select('user_id, guild_id, birthday_date_ddmmyyyy').eq('user_id', str(ctx.message.author.id)).eq('guild_id', str(ctx.guild.id)).execute()
+        if(str(birthdayExist['data']) == "[]"):
+            embed.set_footer(text=f"Ajouter le votre : `e!set_birthday`")
+        else:
+            embed.set_footer(text=f"{len(birthdayList['data'])} anniversaire(s) enregistré(s)")
+
+        # Envoyer l'embed
+        return await ctx.send(embed=embed)
+    #Si une personne est mentionné
+    else:
+        # Obtenir la date de naissance de la personne mentionné
+        birthday = supabase.table('birthday').select('user_id, guild_id, birthday_date_france, birthday_date_ddmmyyyy').eq('user_id', str(member.id)).eq('guild_id', str(ctx.guild.id)).execute()
+        birthday = birthday["data"]
+
+        # Vérifier si une date de naissance a été enregistré
+        if(str(birthday) == "[]"):
+            return await ctx.reply(f"{member.mention} n'a pas enregistrer sa date de naissance ! ❌")
+
+        
+        # Générer le message/la description de l'embed
+        birthdayMessage = f"{member.mention} est né le **{birthday[0]['birthday_date_france']}** 🎉"
+        print(date.today().strftime('%d/%m'))
+        print()
+        if(date.today().strftime('%d/%m') == f"{birthday[0]['birthday_date_ddmmyyyy'].split('/')[0]}/{birthday[0]['birthday_date_ddmmyyyy'].split('/')[1]}"):
+            birthdayMessage += f"\n\n(pssh, c'est aujourd'hui)"
+
+        # Crée un embed
+        embed=discord.Embed(title=f"{member.name}#{member.discriminator}", description=birthdayMessage, color=cyan)
+        embed.set_thumbnail(url=member.avatar_url)
+        
+        # Envoyer l'embed
+        return await ctx.send(embed=embed)
+
+#Fin Database
 
 
 
+bot.run(auth.token)
 
-bot.run("token")
