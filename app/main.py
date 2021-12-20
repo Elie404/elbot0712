@@ -39,7 +39,7 @@ import tweepy
 intents = discord.Intents().default()
 intents.members = True
 
-bot = commands.Bot(command_prefix = "e?", description = "Tutititutu mais en Python", intents=intents)
+bot = commands.Bot(command_prefix = "e!", description = "Tutititutu mais en Python", intents=intents)
 slash = SlashCommand(bot, sync_commands=True)
 musics = {} 
 ytdl = youtube_dl.YoutubeDL()
