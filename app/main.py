@@ -7,6 +7,8 @@ from asyncio.futures import _FINISHED
 import discord
 import io, base64
 import json
+
+from discord import channel
 import auth
 from discord import user
 from discord import member
@@ -90,6 +92,19 @@ corail = 0xf1263f
 
 elbot = 809344905674489866
 
+def isOwner(ctx):
+ return ctx.message.author.id == 727572859727380531
+
+
+def elWatchServ(ctx):
+ return ctx.guild.id == 881488037979250768
+
+def johan(ctx):
+ return ctx.message.author.id == 277825082334773251
+
+
+#Fin reactroles
+
 @bot.event
 async def on_ready():
     print(chalk.green (f"Le code Python est allumé ! {bot.user.name}"))
@@ -98,45 +113,6 @@ async def on_ready():
 async def changeStatus():
 	game = discord.Game(random.choice(status))
 	await bot.change_presence(status = discord.Status.idle, activity = game)
-
-
-async def getVerifiéRole(ctx):
-    roles = ctx.guild.roles
-    for role in roles:
-        if role.name == "👤 Membre 👤":
-            return role
-
-async def guildID(ctx):
-    ctx.guild.id
-async def guildName(ctx):
-    ctx.guild.name
-async def guildCount(ctx):
-    ctx.guild.member_count
-
-
-@bot.event
-async def on_member_join(member):
-    if guildID == 865914342041714700:
-        #verifiérole = await getVerifiéRole(ctx)
-        channel = bot.get_channel(865914342545424407)
-        await channel.send(f"Bienvenue à toi {member} sur le serveur **{guildName}**\nNous sommes désormais {guildCount} 🎉 ")
-
-    elif guildID == 881488037979250768:
-        #verifiérole = await getVerifiéRole(ctx)
-        #await member.add_roles(verifiérole)
-        channel = bot.get_channel(905370708530561034)
-        await channel.send(f"Bienvenue à toi {member} sur le serveur **{guildName}**\nNous sommes désormais {guildCount} 🎉 \nN'oublie pas de **lire les règles** pour éviter un **ban/kick/mute** et de lire les informations pour tout simplifier.\nJ'espère que tu vas kiffer 😁")
-
-@bot.event
-async def on_member_remove(member):
-    if guildID == 865914342041714700:
-        channel = bot.get_channel(865914342545424407)
-        await channel.send(f"{member} nous a malheureusement quitté\nNous sommes désormais {guildCount}")
-
-    elif guildID == 881488037979250768:
-        channel = bot.get_channel(905370708530561034)
-        await channel.send(f"{member} nous a malheureusement quitté\nNous sommes désormais {guildCount}")
-
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -420,13 +396,6 @@ async def count(ctx, *texte): #site ok
     texte = " ".join(texte)
     a = len(texte)
     await ctx.reply(f"{texte} contient {a} caractères")
-
-
-blurple = 0x6200ea
-red = 0xff0000
-blue = 0x0000ff
-cyan = 0x00ffff
-corail = 0xf1263f
 
 
 @bot.command()
@@ -737,15 +706,7 @@ async def unban(ctx, user, *reason): #site ok
     await ctx.send(f"L'utilisateur {user} n'est pas dans la liste des bans")
  
 
-def isOwner(ctx):
- return ctx.message.author.id == 727572859727380531
 
-
-def elWatchServ(ctx):
- return ctx.guild.id == 881488037979250768
-
-def johan(ctx):
- return ctx.message.author.id == 277825082334773251
 
 
 
@@ -1274,12 +1235,23 @@ async def removebg(ctx, text): #site ok
 
 #Fin de removebg
 #Database    
+ancien = ["Highest ça va ?","Waaaaaah le dinosaure","Même Highest est moins vieux","T'es vivant?????", "Starfoullah comment t'as fait pour vivre aussi longtemps????"]
+futuriste = ["Tu es dans le futur.", "Wahahaha Baby Bosse","Même Steve Jobs il était moins dans le turfu que toi","Imagine je suis ton futur daron ptdrrrrrrr"]
+
 
 @bot.command(aliases=['add_birthday','set_birthday','birthday_set'])
 async def birthday_add(ctx, day : int, month : str, year : int = None):
     # Vérifier si la date est valide - jour de naissance
-    if day < 1 or day > 31:
-        return await ctx.reply("Erreur vous n'avez pas sélectionner un jour valide") 
+    if day < 1:
+        return await ctx.reply("Erreur : le jour doit être compris entre 1 et 31")
+
+    # Vérifier si la date est valide - jour de naissance
+    if day > 31:
+        return await ctx.reply("Erreur : " + random.choice(futuriste))
+
+    # Si le mois contient une majuscule, mettre le mois en minuscule
+    if month.isupper():
+        month = month.lower()
 
     # Vérifier si la date est valide - mois de naissance
     if month != "janvier" and month != "février" and month != "mars" and month != "avril" and month != "mai" and month != "juin" and month != "juillet" and month != "août" and month != "septembre" and month != "octobre" and month != "novembre" and month != "décembre" and month != "decembre":
@@ -1287,8 +1259,10 @@ async def birthday_add(ctx, day : int, month : str, year : int = None):
 
     # Vérifier si la date est valide - année de naissance
     if year:
-        if year < 1900 or year > 2021:
-            return await ctx.reply("Erreur vous n'avez pas sélectionner une année invalide.")
+        if year > 2021:
+            return await ctx.reply("Erreur : " + random.choice(futuriste))
+        if year < 1900:
+            return await ctx.reply("Erreur : " + random.choice(ancien))
 
     # Modifier l'argument si il n'y a pas d'année
     if not year:
@@ -1304,7 +1278,7 @@ async def birthday_add(ctx, day : int, month : str, year : int = None):
         return await msg.edit(content="Erreur vous n'avez pas saisi une date invalide.")
 
     # Vérifier si une date est déjà entré dans la BDD
-    birthday = supabase.table('birthday').select('user_id, guild_id, birthday_date_ddmmyyyy').eq('user_id', str(ctx.message.author.id)).eq('guild_id', str(ctx.guild.id)).execute()
+    birthday = supabase.table('birthday').select('user_id, birthday_date_ddmmyyyy').eq('user_id', str(ctx.message.author.id)).execute()
 
     # Obtenir la date au format DD/MM/YYYY
     birthday_date_ddmmyyyy = args.split(" ")
@@ -1315,9 +1289,9 @@ async def birthday_add(ctx, day : int, month : str, year : int = None):
     if(not str(birthday['data']) == "[]"):
         # Dire que la modification est en cours...
         await msg.edit(content=f'<a:chargement:922054172734550027> Veuillez patienter pendant la modification de votre date de naissance... <a:chargement:922054172734550027>')
-
+        
         # Modifier dans Supabase la date de naissance
-        supabase.table('birthday').update({ 'birthday_date_france': args, 'birthday_date_ddmmyyyy': birthday_date_ddmmyyyy }).eq('user_id', str(ctx.message.author.id)).eq('guild_id', str(ctx.guild.id)).execute()
+        supabase.table('birthday').update({ 'birthday_date_france': args, 'birthday_date_ddmmyyyy': birthday_date_ddmmyyyy }).eq('user_id', str(ctx.message.author.id)).execute()
         
         # Dire que la modification est terminé
         return await msg.edit(content=f'Votre date de naissance a été modifié avec succès ✅ !')
@@ -1326,7 +1300,7 @@ async def birthday_add(ctx, day : int, month : str, year : int = None):
         await msg.edit(content=f'<a:chargement:922054172734550027> Veuillez patienter pendant l\'ajout de votre date de naissance... <a:chargement:922054172734550027>')
         
         # Ajouter dans Supabase dans la date de naissance
-        setBirthday = supabase.table('birthday').insert({ 'user_id': ctx.message.author.id, 'username': ctx.author.name, 'guild_id': ctx.guild.id, 'guild_name': ctx.guild.name, 'birthday_date_france': args, 'birthday_date_ddmmyyyy': birthday_date_ddmmyyyy }).execute()
+        setBirthday = supabase.table('birthday').insert({ 'user_id': ctx.message.author.id, 'username': ctx.author.name, 'birthday_date_france': args, 'birthday_date_ddmmyyyy': birthday_date_ddmmyyyy }).execute()
         
         # Une fois l'ajout dans Supabase terminé
         if(setBirthday['status_code'] == 201):
@@ -1340,36 +1314,42 @@ async def birthday(ctx, member : discord.Member = None):
     # Si aucune personne n'est mentionnée
     if (not member):
         # Obtenir la liste des anniversaires sur le serveur
-        birthdayList = supabase.table('birthday').select('user_id, guild_id, birthday_date_france').eq('guild_id', str(ctx.guild.id)).execute()
+        birthdayListSupabase = supabase.table('birthday').select('user_id, birthday_date_france').execute()
 
         # Si aucun anniversaire
-        if(str(birthdayList['data']) == "[]"):
-            embed=discord.Embed(title="Aucun anniversaire", description="Aucun anniversaire n'est enregistrer sur ce serveur.\nFaites la commande `e!set_birthday <date>` pour enregistrer la votre !\nSinon vous pouvez consultez la page d'aide https://el2zay.is-a.dev/elbot/", color=0xff0000)
+        if(str(birthdayListSupabase['data']) == "[]"):
+            embed=discord.Embed(title="Aucun anniversaire", description="Aucun anniversaire n'est enregistrer.\nFaites la commande `e!set_birthday <date>` pour enregistrer la votre !\nSinon vous pouvez consultez la page d'aide https://el2zay.is-a.dev/elbot/", color=0xff0000)
             embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
             await ctx.message.reply(embed=embed)
             return print(chalk.red(f"ERREUR: {ctx.author} a essayé de faire la commande birthday sur le serveur {ctx.guild.name} alors que personne n'a enregistrer sa date d'anniversaire !"))
 
+        # Modifier la liste pour avoir uniquement les anniversaires des personnes sur ce serveur
+        birthdayList = []
+        for birthday in birthdayListSupabase['data']:
+            if ctx.guild.get_member(int(birthday['user_id'])) is not None:
+                birthdayList.append(birthday)
+
         # A chaque anniversaire dans la liste
         allBirthdayMsg = ""
-        for birthday in birthdayList['data']:
+        for birthday in birthdayList:
             allBirthdayMsg += f'🎉 **{bot.get_user(int(birthday["user_id"]))}** est né le **{birthday["birthday_date_france"]}** 🎉\n' 
 
         # Crée un embed
         embed=discord.Embed(title=f"Liste des anniversaires", description=allBirthdayMsg, color=cyan)
 
         # Si aucune date n'a été enregistrer pour l'auteur du message, ajouter un footer
-        birthdayExist = supabase.table('birthday').select('user_id, guild_id, birthday_date_ddmmyyyy').eq('user_id', str(ctx.message.author.id)).eq('guild_id', str(ctx.guild.id)).execute()
-        if(str(birthdayExist['data']) == "[]"):
+        birthdayExist = supabase.table('birthday').select('user_id, birthday_date_ddmmyyyy').eq('user_id', str(ctx.message.author.id)).execute()
+        if(len(birthdayExist['data']) == 0):
             embed.set_footer(text=f"Ajouter le votre : `e!set_birthday`")
         else:
-            embed.set_footer(text=f"{len(birthdayList['data'])} anniversaire(s) enregistré(s)")
+            embed.set_footer(text=f"{len(birthdayList)} anniversaire(s) enregistré(s)")
 
         # Envoyer l'embed
         return await ctx.send(embed=embed)
     #Si une personne est mentionné
     else:
         # Obtenir la date de naissance de la personne mentionné
-        birthday = supabase.table('birthday').select('user_id, guild_id, birthday_date_france, birthday_date_ddmmyyyy').eq('user_id', str(member.id)).eq('guild_id', str(ctx.guild.id)).execute()
+        birthday = supabase.table('birthday').select('user_id, birthday_date_france, birthday_date_ddmmyyyy').eq('user_id', str(member.id)).execute()
         birthday = birthday["data"]
 
         # Vérifier si une date de naissance a été enregistré
@@ -1379,8 +1359,7 @@ async def birthday(ctx, member : discord.Member = None):
         
         # Générer le message/la description de l'embed
         birthdayMessage = f"{member.mention} est né le **{birthday[0]['birthday_date_france']}** 🎉"
-        print(date.today().strftime('%d/%m'))
-        print()
+
         if(date.today().strftime('%d/%m') == f"{birthday[0]['birthday_date_ddmmyyyy'].split('/')[0]}/{birthday[0]['birthday_date_ddmmyyyy'].split('/')[1]}"):
             birthdayMessage += f"\n\n(pssh, c'est aujourd'hui)"
 
@@ -1395,5 +1374,4 @@ async def birthday(ctx, member : discord.Member = None):
 
 
 
-bot.run(auth.token)
-
+bot.run(auth.token) 
