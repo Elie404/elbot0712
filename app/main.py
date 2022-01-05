@@ -1,13 +1,12 @@
-from asyncio.tasks import run_coroutine_threadsafe
 from operator import and_, ifloordiv, is_not
 import operator
 from typing import Text, Tuple
+import os
 from os import *
 from asyncio.futures import _FINISHED
 import discord
 import io, base64
 import json
-
 from discord import channel
 import auth
 from discord import user
@@ -31,6 +30,7 @@ from discord.ext.commands.errors import BotMissingPermissions, BotMissingRole
 from discord.utils import get
 from discord_slash.utils.manage_commands import create_option, create_choice
 import requests
+from urllib import parse
 from discord import FFmpegPCMAudio
 from discord import TextChannel
 from requests.api import options
@@ -64,12 +64,10 @@ funFact = ["Elbot était créer de base pour diffuser seulement le tutitititutu 
 "Elbot est toujours en cours de développement et à chaque semaine des mise à jours.",
 "Je suis héberger sur la Freebox Delta de el2zay."]
 
-
 status = ["Chante tutititutu tout en changeant pour Ubuntu",
 "https://el2zay.is-a.dev/elbot",
 "Entrain d'être coder en Python",
 "Le code est désormais en full Python 🐍👀",
-"Petit conseil ne dit pas mon nom dans un serveur où y'a moi et rmxbot",
 "Les commandes slash sont entrain d'être coder.",
 ":S"]
 
@@ -158,15 +156,14 @@ async def on_command_error(ctx, error):
         await ctx.reply(embed = embed)
         print(chalk.red(error))
 
-
 #Message
 @bot.listen()
 async def on_message(message):
-    if message.content.lower()=="c'est pas possible":
+    if message.content.lower()=="c'est pas possible" and message.author.id != 882167050536120340 and message.author.id != elbot and (await checkIfMsgIsDisabled(message.guild.id, 'cpp') == True):
         await message.reply("Mais si c'est possible avec la CARTE **KIWI**")
     if message.content == ":)" or message.content == ":(":
         await message.reply (":S")
-    if message.content.startswith("bon") and message.author.id != elbot and message.content != "BONBON 🍬":
+    if message.content.startswith("bon") and message.author.id != 882167050536120340 and message.author.id != elbot and message.content != "BONBON 🍬" and (await checkIfMsgIsDisabled(message.guild.id, 'cpp') == True):
         await message.reply("BONBON 🍬")
     #Suisse
     if message.content.lower()=="je suis suisse" and message.author.id != "809344905674489866" and message.content != "Je suis suisse et je suis polie" and message.content != "Je suis suisse et j'ai les moyens" and message.content != "Je suis suisse mais suis-je sexy?":
@@ -181,24 +178,14 @@ async def on_message(message):
         await message.reply("C'est bien")
     if (message.content.lower() == "je suis suisse et j'ai les moyens"):
           await message.reply("Youpi")
-    if (message.content.lower() == "je suis suisse mais suis-je sexy?"):
+    if (message.content.lower() == "je suis suisse mais suis-je sexy ?"):
           await message.reply("Euh oui mais surtout gentil...")
     #Fin de suisse
 
-    if message.content == "BONBON 🍬" and message.author.id != elbot:
+    if message.content == "BONBON 🍬" and message.author.id != 882167050536120340 and message.author.id != elbot:
         await message.add_reaction("❤️")
 
     if (message.content.lower() == "oof"): await message.add_reaction(":oof:922051930992304159")
-
-
-    #rmxbot
-    if message.content == "Tu parles de ce bot chiant et inutile là ?":
-        await message.reply("Va remix tes pantoufles toi")
-    if message.content.startswith("Ah nan ça c'est mon connard de proprio... "):
-        await message.reply("https://tenor.com/view/ferme-ta-gueule-ta-gueule-tg-julien-lepers-lepers-gif-13251519")
-    if message.content == "Toi même":
-        await message.reply("https://tenor.com/view/nou-no-you-uno-uno-reverse-gif-21173861")
-    #Fin rmxbot
 
     #Lower case
 
@@ -209,15 +196,16 @@ async def on_message(message):
         await message.add_reaction(":ubuntudansbassine:922047737153855550") #maj
 
     lowerMessage = message.content.lower()
-    if lowerMessage.find("linux c'est de la merde") != -1 or lowerMessage.find("ubuntu c'est de la merde") != -1:
-        await message.reply("Regarde cette vidéo et on verra. \n https://www.youtube.com/watch?v=jdUXfsMTv7o")
+    if lowerMessage.find("linux c'est de la merde") != -1 or lowerMessage.find("ubuntu c'est de la merde") != -1 and message.author.id != 882167050536120340 and message.author.id != elbot:
+        if(await checkIfMsgIsDisabled(message.guild.id, 'linuxmerde') == True) and message.author.id != 882167050536120340 and message.author.id != elbot:
+            await message.reply("Regarde cette vidéo et on verra. \n https://www.youtube.com/watch?v=jdUXfsMTv7o")
 
     lowerMessage = message.content.lower()
-    if lowerMessage.find("jannot gaming") != -1:
+    if lowerMessage.find("jannot gaming") != -1 and (await checkIfMsgIsDisabled(message.guild.id, 'jannotgaming') == True) and message.author.id != 882167050536120340 and message.author.id != elbot:
         await message.reply("https://tenor.com/view/potatoz-jano-gaming-nowagifs-gif-18818348")
 
     lowerMessage = message.content.lower()
-    if lowerMessage.find("merde") != -1:
+    if lowerMessage.find("merde") != -1 and message.author.id != 882167050536120340 and message.author.id != elbot:
         await message.add_reaction("💩")
         await message.add_reaction(":bassinechrotte:922048937995677697") #maj
     lowerMessage = message.content.lower()
@@ -235,21 +223,22 @@ async def on_message(message):
     if lowerMessage.find("poubelle") != -1:
         await message.add_reaction("🚮")
 
-    lowerMessage = message.content.lower()
-    if lowerMessage.find("tutititutu") != -1:
+    lowerMessage = message.content.lower() 
+    if lowerMessage.find("tutititutu") != -1 and message.author.id != 882167050536120340 and message.author.id != elbot:
         await message.add_reaction(":briquetelecom:922049674305740862") #maj
-        await message.reply("https://cdn.discordapp.com/emojis/816728856823201813.png?v=1")
+        if (await checkIfMsgIsDisabled(message.guild.id, 'tutititutu') == True) and message.author.id != 882167050536120340 and message.author.id != elbot:
+            await message.reply("https://cdn.discordapp.com/emojis/816728856823201813.png?v=1")
 
     lowerMessage = message.content.lower()
     if lowerMessage.find("avira") != -1:
         await message.add_reaction(":avira:922050319557480481")
 
     lowerMessage = message.content.lower()
-    if lowerMessage.find("changez pour stickman") != -1:
+    if lowerMessage.find("changez pour stickman") != -1 and (await checkIfMsgIsDisabled(message.guild.id, 'changezstickman') == True and message.author.id != 882167050536120340 and message.author.id != elbot):
         await message.reply("*Mangez des stickman")
 
     lowerMessage = message.content.lower()
-    if lowerMessage.find("apple") != -1:
+    if lowerMessage.find("apple") != -1 and message.author.id != 882167050536120340 and message.author.id != elbot:
         await message.reply(" https://tenor.com/view/lisa-simpsons-think-differently-gif-10459041")
         await message.add_reaction("🍎")
 
@@ -264,27 +253,19 @@ async def on_message(message):
         await message.add_reaction(":total:922051358985707590") #maj
 
     lowerMessage = message.content.lower()
-    if lowerMessage.find("noice") != -1:
-        await message.reply("https://tenor.com/view/noice-nice-click-gif-8843762")
-
-    lowerMessage = message.content.lower()
-    if lowerMessage.find("scratch") != -1:
+    if lowerMessage.find("scratch") != -1 and (await checkIfMsgIsDisabled(message.guild.id, 'scratch') == True)and message.author.id != 882167050536120340 and message.author.id != elbot:
         await message.reply("Chat de merde")
 
     lowerMessage = message.content.lower()
-    if lowerMessage.find("bonjoir") != -1:
+    if lowerMessage.find("bonjoir") != -1 and (await checkIfMsgIsDisabled(message.guild.id, 'bonjoir') == True)and message.author.id != 882167050536120340 and message.author.id != elbot:
         await message.reply("Hachoir")
 
         lowerMessage = message.content.lower()
-    if lowerMessage.find("rmxbot") != -1:
-        await message.reply("Ptdr il est plus inutile que moi mais je l'aime bien")
-
-        lowerMessage = message.content.lower()
-    if lowerMessage.find("courgette") != -1:
+    if lowerMessage.find("courgette") != -1 and (await checkIfMsgIsDisabled(message.guild.id, 'courgette') == True)and message.author.id != 882167050536120340 and message.author.id != elbot:
         await message.reply("Counnasse")
 
         lowerMessage = message.content.lower()
-    if lowerMessage.find("ouille") != -1:
+    if lowerMessage.find("ouille") != -1 and (await checkIfMsgIsDisabled(message.guild.id, 'ouille') == True)and message.author.id != 882167050536120340 and message.author.id != elbot:
         await message.reply("https://pbs.twimg.com/media/ETkK977X0AE3x-x.jpg")
 
 
@@ -321,7 +302,6 @@ async def infoserver(ctx):
     embed.add_field(name = "Nombre de rôles : ", value = serverRoles, inline = True)	
     await ctx.send(embed = embed)
 
-	
 
 @bot.command(aliases=['serverinfo2']) #slash ok
 async def infoserver2(ctx): #site ok
@@ -334,7 +314,7 @@ async def infoserver2(ctx): #site ok
     embed.add_field(name='Liste des rôles :', value=", ".join(serverListRole))    
     await ctx.send(embed = embed)
 
-@bot.command(aliases=['infouser'])
+@bot.command(aliases=['infouser','avatar'])
 async def userinfo(ctx, *, member: discord.Member=None): #site ok
     if not member:
         member = ctx.message.author
@@ -352,39 +332,21 @@ async def userinfo(ctx, *, member: discord.Member=None): #site ok
     embed.add_field(name="Rôle(s) :", value=", ".join(rolelist), inline=False)
     await ctx.message.reply(embed=embed)
 
-@bot.command()
-async def qi(ctx, *,member : discord.Member=None): #site ok
-    if not member:
-        member = ctx.message.author
-    limite_inferieure=60
-    limite_superieure=250
-    num = random.randint(limite_inferieure, limite_superieure)
-    if num > 59 and num < 81:
-        await ctx.reply(f"Le qi de {member} est de {num} AHAHAHA T CON PUTAIN")
-    if num > 80 and num < 95:
-        await ctx.reply(f"Le qi de {member} est de {num} t'es un peu con mais trkl")
-    if num > 94 and num < 116:
-        await ctx.reply(f"Le qi de {member} est de {num}, ça va t'es normal")
-    if num > 115 and num < 131:
-        await ctx.reply(f"Le qi de {member} est de {num}, Oooooh c'est pas mal en vrai")
-    if num > 129 and num < 151:
-        await ctx.reply(f"Le qi de {member} est de {num}, T'es vraiment intelligent")
-    if num > 149 and num < 160:
-        await ctx.reply(f"Le qi de {member} est de {num}, Preque-Génie")
-    if num > 159 and num < 171:
-        await ctx.reply(f"Le qi de {member} est de {num}, Steve Jobs, Bill Gates, Einstein")
-    if num > 170 and num < 225:
-        await ctx.reply(f"Le qi de {member} est de {num}, T'ES PLUS INTELLIGENT QUE STEVE JOBS, BILL GATES ET MÊME DE EINSTEIN")
-    if num == 225:
-        await ctx.reply(f"Le qi de {member} est de {num}, T'ES AUSSI INTELLIGENT QUE TERENCE TAO aka le mec le plus intelligent au monde")
-    if num > 225:
-        await ctx.reply(f"Le qi de {member} est de {num}, t'es le mec le plus intelligent gg")
-
     
 @bot.command() #ok site ok 
 async def heberger(ctx):
- message = ("Le code python est en ce moment hébergé sur la freebox de Elie (c'est pas une blague)")
- await ctx.send(message)
+    # Obtenir le nom de la plateforme
+    platform = os.name
+    # Si la plateforme est linux
+    if platform == 'linux':
+        await ctx.reply("Le code python est en ce moment hébergé sur la freebox de Elie (c'est pas une blague)")
+    #Si la plateforme est mac
+    if platform == "darwin" or "macOS" or "mac" or 'macintosh': 
+        await ctx.reply("Le code python est en ce moment hébergé sur le macbook d'Elie")
+    else:
+        await ctx.reply("OS inconnu.")
+
+
 
 
 @bot.command() #fait en slash
@@ -463,21 +425,6 @@ async def list_color(ctx):
     await ctx.reply(embed = embed)
 
 
-
-# @bot.command()
-# async def fake(ctx, *texte):
-#     if ctx.message.webhook_id:
-#         return
-#     fchannel = bot.get_channel(865916197722390538)
-#     tchannel = bot.get_channel(865914342545424407)
-#     webhook_id = 912025118010671116
-#     hooks = await tchannel.webhooks()
-#     hook = get(hooks, id=webhook_id)  
-#     if ctx.channel == fchannel:
-#         webhook = await ctx.channel.create_webhook(name='test')
-        # msg = await webhook.send(content= texte, username=ctx.author.name, avatar = ctx.author.avatar_url, wait = True)
-
-
 @bot.command() #site ok
 async def say(ctx, *texte):
     if not texte:
@@ -494,6 +441,10 @@ async def say(ctx, *texte):
         texte = texte.replace("el2zay","maître bien-aimé")
         texte = texte.replace("elie","Ô grand maitre bien aimé")
         texte = texte.replace("Elie","Ô grand maitre bien aimé")
+        texte = texte.replace("pute","Ta mère")
+        texte = texte.replace("Pute","Ta mère")
+        texte = texte.replace(":(",":S")
+        texte = texte.replace(":)",":S")
         await ctx.message.delete()
         await ctx.send(texte)
     if ctx.author.id == 727572859727380531:
@@ -518,10 +469,10 @@ async def sondage(ctx, *, texte = None): #site ok
 @bot.command(pass_context = True)
 async def contact(ctx, *text): #site ok
     user = bot.get_user(727572859727380531)
-    await user.send(f"{ctx.author} vous a dit sur le serveur {ctx.guild.name} " + (" ".join (text)))
+    await user.send(f"{ctx.author} vous a dit sur le serveur {ctx.guild.name} \n" + (" ".join (text)))
 
 @bot.command(pass_context = True)
-async def dm(id : int, *text : None): #site ok
+async def dm(id : int, *text): #site ok
     user = bot.get_user(id)
     await user.send(" ".join(text))
 
@@ -580,6 +531,16 @@ async def skip(ctx): #site ok
     client.stop()
     await ctx.reply("J'ai passé la musique ⏭")
 
+loopGuild = []
+@bot.command() 
+async def loop(ctx): #site ok
+    if ctx.guild in loopGuild:
+        loopGuild.remove(ctx.guild)
+        await ctx.reply("La musique n'est plus en boucle 🔁")
+    else:
+        loopGuild.append(ctx.guild)
+        await ctx.reply("La musique est maintenant en boucle 🔁")
+
 
 def play_song(client, queue, song):
     source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(song.stream_url
@@ -591,7 +552,10 @@ def play_song(client, queue, song):
             del queue[0]
             play_song(client, queue, new_song)
         else:
-            asyncio.run_coroutine_threadsafe(client.disconnect(), bot.loop)
+            if(client.guild in loopGuild):
+                play_song(client, queue, song)
+            else:
+                asyncio.run_coroutine_threadsafe(client.disconnect(), bot.loop)
 
     client.play(source, after=next)
 
@@ -611,8 +575,34 @@ async def play(ctx, url): #site ok
         await ctx.send(f"Je joue : {video.url} ▶️")
         play_song(client, musics[ctx.guild], video)
 
-#fin commande musique
+@bot.command()
+async def brique(ctx):
+    # Fonction pour lancer une musique
+    async def startMusic(ctx,vc):
+        channel = ctx.author.voice.channel
+        video = Video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        musics[ctx.guild] = []
+        client = await channel.connect()
+        play_song(client, musics[ctx.guild], video)
 
+        # Une fois que la musique commence à se jouer, envoyer un message
+        await ctx.send(f"{ctx.author.mention} je joue la musique !")
+
+        # Une fois la musique terminé, la recommencer
+        vc.on('end', lambda: startMusic())
+
+    # Vérifier si l'auteur du message est dans un salon vocal
+    if(ctx.message.author.voice is None):
+        return await ctx.send(f"{ctx.message.author.mention}, vous devez être dans un salon vocal pour jouer la musique !")
+
+    # Envoyer un message pour dire que la musique va se lancer.. 
+    await ctx.send(f"Lancement de Tutititutu 🧱")
+
+    # Charger la musique dans le salon vocal
+    vc = await ctx.author.voice.channel.connect()
+    startMusic(ctx,vc)
+
+#fin commande musique
 
 @bot.command()
 @commands.has_permissions(kick_members = True)
@@ -630,25 +620,6 @@ async def kick(ctx, user : discord.User, *, reason = None): #site ok
     await ctx.send(embed = embed)
     embed = discord.Embed(title = "Bannissement", description = f"Un modérateur a frappé !\nVous avez été banni par {ctx.author.name} pour la raison {reason}", color=0xff2812)
     await user.send(embed = embed)
-
-
-@bot.command()
-async def calc(ctx, a : float,b, c : float): #site ok // Commande la moins optimisé du code
-    if b == "+" :
-        await ctx.reply(a+c)
-    elif b == "-":
-        await ctx.reply(a-c)
-    elif b == "/":
-        await ctx.reply(a / c)
-    elif b == "*" or b == "x":
-        await ctx.reply(a*c)
-
-
-@bot.command()
-async def avatar(ctx): #site ok
-	embed = discord.Embed(title = "Avatar", description = "Voici votre avatar")
-	embed.set_thumbnail(url = ctx.author.avatar_url)
-	await ctx.send(embed = embed)
 
 
 @bot.command()
@@ -705,10 +676,6 @@ async def unban(ctx, user, *reason): #site ok
     #Ici on sait que lutilisateur na pas ete trouvé
     await ctx.send(f"L'utilisateur {user} n'est pas dans la liste des bans")
  
-
-
-
-
 
 
 #Jeux
@@ -782,7 +749,33 @@ async def pfc(ctx, texte : str): #site ok
         await ctx.reply("Mais ptn c'est mathématique, les ciseaux ils coupent la feuille, la feuille elle recouvre la pierre, la pierre elle éclate les ciseaux, qu'est ce qui ce passe si tu mets un putain de puits. Les ciseaux ils tombent dedans, la pierre elle tombe dedans, donc statistiquement t'as plus de chances de gagner avec le puits qu'est ce qui va se passer?! On va tous les deux faire le puits! Ça va devenir le jeu du puits. Puits puits puits puits, oh qu'elle suprise t'as fait un puits aussi fils de pute on est encore à égalité. Bravo.")
 
 
-
+@bot.command()
+async def qi(ctx, *,member : discord.Member=None): #site ok
+    if not member:
+        member = ctx.message.author
+    limite_inferieure=60
+    limite_superieure=250
+    num = random.randint(limite_inferieure, limite_superieure)
+    if num > 59 and num < 81:
+        await ctx.reply(f"Le qi de {member} est de {num} AHAHAHA T CON PUTAIN")
+    if num > 80 and num < 95:
+        await ctx.reply(f"Le qi de {member} est de {num} t'es un peu con mais trkl")
+    if num > 94 and num < 116:
+        await ctx.reply(f"Le qi de {member} est de {num}, ça va t'es normal")
+    if num > 115 and num < 131:
+        await ctx.reply(f"Le qi de {member} est de {num}, Oooooh c'est pas mal en vrai")
+    if num > 129 and num < 151:
+        await ctx.reply(f"Le qi de {member} est de {num}, T'es vraiment intelligent")
+    if num > 149 and num < 160:
+        await ctx.reply(f"Le qi de {member} est de {num}, Preque-Génie")
+    if num > 159 and num < 171:
+        await ctx.reply(f"Le qi de {member} est de {num}, Steve Jobs, Bill Gates, Einstein")
+    if num > 170 and num < 225:
+        await ctx.reply(f"Le qi de {member} est de {num}, T'ES PLUS INTELLIGENT QUE STEVE JOBS, BILL GATES ET MÊME DE EINSTEIN")
+    if num == 225:
+        await ctx.reply(f"Le qi de {member} est de {num}, T'ES AUSSI INTELLIGENT QUE TERENCE TAO aka le mec le plus intelligent au monde")
+    if num > 225:
+        await ctx.reply(f"Le qi de {member} est de {num}, t'es le mec le plus intelligent gg")
 
 #Fin jeux
 
@@ -878,6 +871,14 @@ async def getVerifiéRole(ctx):
     for role in roles:
         if role.name == "👤 Membre 👤":
             return role
+
+@bot.command()
+@commands.check(isOwner)
+async def stop_bot(ctx):
+    await ctx.send("⚡️ D'accord je m'éteins ! ⚡️")
+    await bot.logout()
+    os.kill(os.getpid())
+    os.kill(os.getpid())
 
 @bot.command()
 @commands.check(isOwner)
@@ -986,15 +987,15 @@ async def ticket(ctx, user: discord.Member=False): #site ok
 
 
 @bot.command()
-async def close(ctx):
+async def close(ctx): #site ok
     if ctx.guild.id == 881488037979250768 and ctx.channel.category_id == 901452596638789634:
         return await ctx.channel.delete()
     else:
         return await ctx.send(content=f"Ce salon n'est pas un ticket et ne peut être fermé")
 
     
-@bot.command()
-async def reverse(ctx):
+@bot.command() 
+async def reverse(ctx): #site ok
     await ctx.send("https://tenor.com/view/power-legendary-reverse-card-econowise-reverse-card-legendary-uno-reverse-card-uno-legendary-reverse-card-gif-23531292")
 
 
@@ -1043,12 +1044,97 @@ async def clear(ctx, nombre : int): #site ok
         if button_ctx.custom_id == "non":
             await button_ctx.edit_origin(content="Aucun message n'a été clear.")
 
-
 @bot.command()
 async def help(ctx):
-    embed = discord.Embed(title = "Commande help", description = f"Mot du créateur du bot aka el2zay: BONJOUR {ctx.author.name} TU AS ESSAYÉ DE FAIRE LA COMMANDE HELP MAIS ELLE N'EST PAS DISPONIBLE POUR LE MOMENT?????\n T'inquiètes pas pour l'instant je t'invite à regarder le site de elbot où tu trouveras tout ce que vous t'as besoin. https://el2zay.is-a.dev/elbot \n(Une nouvelle commande help beaucoup plus complète que l'ancienne sera bientôt disponible avec des exemples et tout.)", color=blurple)
-    embed.set_footer(text = "(Mais si tu dis mon nom ça enclenchera une guerre de bot 🙃) ah et mon prefix c'est e! mais je pense tu le sais déjà")
-    await ctx.reply(embed = embed)
+    select = create_select(
+        options=[
+            create_select_option("🤖 Commande de base 🤖", value="1"),
+            create_select_option("🧠 Administration 🧠", value="2"),
+            create_select_option("🎵 Musique 🎵", value="3"),
+            create_select_option("💻 Database 💻", value="4"),
+            create_select_option("🎮 Jeux 🎮", value="5"),
+            create_select_option("👾 Autre 👾", value="6")
+        ],
+        placeholder="Veuillez sélectionner le type de votre demande.",
+        min_values=1,
+        max_values=1
+    )
+    fait_choix = await ctx.send("Commande help", components=[create_actionrow(select)])
+
+    def check(m):
+        return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
+
+    choice_ctx = await wait_for_component(bot, components=select, check=check)
+
+    if choice_ctx.values[0] == "1":
+        embed = discord.Embed(title= "🤖 Commande de base 🤖",description = f"", color= cyan)
+        embed.add_field(name = "say <texte>", value= "Pour me faire dire tout et n'importe quoi\nAttention Vous ne pouvez pas mentionner @here/@everyone.", inline = True)
+        embed.add_field(name = "chinese <texte>", value= "Pour me faire dire tout et n'importe quoi mais où les caractères sont transformés en caractères chinois.\nAttention Vous ne pouvez pas mentionner @here/@everyone.", inline = True)
+        embed.add_field(name = "embed <titre>§<description>§<footer>§<couleur>", value = "Créer un embed à partir de elbot\ne!embed Ça c'est le titre§ça c'est la description§ça c'est le footer§et là, la couleur. (voir commande list_color)", inline = True)
+        embed.add_field(name="list_color", value= "Connaitre les couleurs disponibles pour elbot\nSi vous souhaitez faire la proposition d'une couleur n'hésitez pas contacter el2zay à l'aide de la commande e!contact.", inline=True)
+        embed.add_field(name = "ping", value= "Affiche le temps de latence du bot en ms.", inline = True)
+        embed.add_field(name = "heberger", value= "Pour savoir sur quel hébergeur je suis héberger en ce moment !", inline = True)
+        embed.add_field(name = "invite", value= "Donne un lien d'invitation pour inviter le bot sur votre serveur.", inline = True)
+        embed.add_field(name = "contact <texte>", value = "Pour contacter le créateur du bot en cas de problème.", inline = True)	
+        embed.add_field(name = "count <texte>", value = "Compter le nombre de caractères dans un mot ou une phrase.", inline = True)
+        embed.add_field(name = "sondage <texte> (argument facultatif)", value = "Créer un sondage avec les choix \"oui\" et \"non\" grâce aux réactions.", inline = True)
+        embed.add_field(name="infoserver/serverinfo", value= "Pour connaitre les informations importantes sur ce serveur", inline=True)
+        embed.add_field(name = "infoserver2/serverinfo2", value = "Suite de la commande infoserver/serverinfo", inline = True)	
+        embed.add_field(name = "infouser / avatar <user> (argument facultatif)", value = "Pour connaitre les informations sur un utilisateur", inline = True)	
+        embed.set_footer(text="https://el2zay.is-a.dev/elbot")
+        await choice_ctx.send(embed = embed)
+    if choice_ctx.values[0] == "2":
+        embed = discord.Embed(title= "🧠 Administration 🧠",description = f"", color=red)
+        embed.add_field(name = "clear <nombre> ❌**COMMANDE AYANT DES PROBLÈMES**❌", value= "Pour clear le nombre de message que vous souhaitiez", inline = True)
+        embed.add_field(name = "kick <membre>", value= "Pour expulser un membre sur un serveur.", inline = True)
+        embed.add_field(name = "ban <membre>", value = "Pour bannir un membre sur un serveur", inline = True)
+        embed.add_field(name = "unban <membre>", value= "Pour débannir un membre sur un serveur\n`e!unban el2zay#1234`", inline=True)
+        embed.add_field(name = "lock", value= "Verouiller un salon.", inline = True)
+        embed.add_field(name = "unlock", value= "Déverouiller un salon.", inline = True)
+        embed.add_field(name = "mute <membre>", value = "Pour muter un membre du serveur.", inline = True)
+        embed.add_field(name = "unmute <membre>", value= "Pour unmute un membre du serveur.", inline=True)
+        embed.set_footer(text="https://el2zay.is-a.dev/elbot")
+        await choice_ctx.send(embed = embed)
+    if choice_ctx.values[0] == "3":
+        embed = discord.Embed(title= "🎵 Musique 🎵",description = f"", color=red)
+        embed.add_field(name = "play <lien>", value= "Joue de la musique grâce à un lien youtube", inline = True)
+        embed.add_field(name = "stop", value = "Arrête la musique.", inline = True)
+        embed.add_field(name = "pause", value= "Met en pause la musique.", inline = True)
+        embed.add_field(name = "resume", value= "Reprend la musique.", inline=True)
+        embed.add_field(name = "loop", value= "Lis la musique en boucle", inline = True)
+        embed.add_field(name = "skip", value= "Passe la musique.", inline = True)
+        embed.add_field(name = "brique", value = "**❌COMMANDE NON FONCTIONNELLE❌**. Pour que elbot chante tutititutu", inline = True)
+        embed.set_footer(text="https://el2zay.is-a.dev/elbot")
+        await choice_ctx.send(embed = embed)
+    if choice_ctx.values[0] == "4":
+        embed = discord.Embed(title= "💻 Database 💻",description = f"Les commandes database utilisent Supabase.", color=red)
+        embed.add_field(name = "set_birthday / add_birthday <JJ mois AAAA> (AAAA est facultatif)", value= "Ajouter ou modifier la date de son anniversaire.\nVotre anniversaire est affiché sur tous les serveurs où vous êtes et où est Elbot. Pas besoin de mettre plein de fois son anniversaire sur plein de serveurs.C'est cool hein :S", inline = True)
+        embed.add_field(name = "birthday <membre> (argument facultatif)", value= "Voir la liste des anniversaires. Vous pouvez aussi voir la liste d'un seul membre en le mentionnant.", inline = True)
+        embed.set_footer(text="https://el2zay.is-a.dev/elbot")
+        await choice_ctx.send(embed = embed)
+    if choice_ctx.values[0] == "5":
+        embed = discord.Embed(title= "🎮 Jeux 🎮",description = f"", color=red)
+        embed.add_field(name = "roulette", value= "Pour tirer au hasard qui gagnera des participants un ban ou kick ou rôle personnalisé un mute ou un gage.", inline = True)
+        embed.add_field(name = "pfc <texte>", value= "Faire un pierre feuille ciseaux", inline = True)
+        embed.add_field(name = "qi <membre> (argument facultatif)", value = "Connaitre son QI ou celui d'un autre membre/bot du serveur.", inline = True)
+        embed.add_field(name = "number ", value= "**CETTE COMMANDE N'EST DISPONIBLE QU'EN SLASH** Pour avoir un nombre au hasard.", inline=True)
+        embed.set_footer(text="https://el2zay.is-a.dev/elbot")
+        await choice_ctx.send(embed = embed)
+    if choice_ctx.values[0] == "6":
+        embed = discord.Embed(title= "👾 Autre 👾",description = f"", color=red)
+        embed.add_field(name = "pessi", value= "Pour connaitre tous les mots de pessis", inline = True)
+        embed.add_field(name = "github", value= "Pour afficher le code github", inline = True)
+        embed.add_field(name = "funfact", value = "Pour connaitre une anecdote sur Elbot.", inline = True)
+        embed.add_field(name = "timer/minuteur <secondes>", value= "Pour lancer un minuteur à la fin de ce minuteur vous serez averti par MP", inline=True)
+        embed.add_field(name = "removebg <lien>", value= "Enlever l'arrière plan d'un image.\nPowered by removebg", inline = True)
+        embed.add_field(name = "watchbot", value= "Voir le statut des bots amis à Elbot au fil du temps à l'aide de Watchbot", inline = True)
+        embed.add_field(name = "choix", value = "Commande pour test les boutons que j'ai laissé...", inline = True)
+        embed.add_field(name = "cuisiner <texte>", value= "Ça sert à rien mais ça m'aide beaucoup.", inline=True)
+        embed.add_field(name = "reverse", value= "Lance un reverse", inline=True)
+        embed.add_field(name = "dm <id>", value= "Pour me faire dire tout et n'importe quoi en mp a des personnes grâce à leurs ID's", inline=True)
+        embed.set_footer(text="https://el2zay.is-a.dev/elbot")
+        await choice_ctx.send(embed = embed)
+
 
 @bot.command()
 async def invite(ctx): #site ok
@@ -1140,6 +1226,9 @@ async def number(ctx, limite_inferieure, limite_superieure):
      await asyncio.sleep(1)
      num = random.randint(limite_inferieure, limite_superieure)
      await ctx.send(f"**{num}**")
+
+
+
 guild_ids = [865914342041714700]
 @slash.slash(name="infoserver", description="Pour connaitre les informations sur ce serveur")
 async def infoserver(ctx): #site ok
@@ -1187,12 +1276,21 @@ async def infoserver2(ctx):
 
 @slash.slash(name="heberger", description="Pour savoir où est hebergé le code PY")
 async def heberger(ctx):
- message = ("Le code python est en ce moment hébergé sur la freebox de Elie (c'est pas une blague)")
- await ctx.send(message)
+    # Obtenir le nom de la plateforme
+    platform = os.name
+    # Si la plateforme est linux
+    if platform == 'linux':
+        await ctx.reply("Le code python est en ce moment hébergé sur la freebox de Elie (c'est pas une blague)")
+    #Si la plateforme est mac
+    if platform == "darwin" or "macOS" or "mac" or 'macintosh': 
+        await ctx.reply("Le code python est en ce moment hébergé sur le macbook d'Elie")
+    else:
+        await ctx.reply("OS inconnu.")
 
 @slash.slash(name="funfact", description="Pour connaitre une anecdote sur elbot et sa création.")
 async def funfact(ctx): #site ok
  await ctx.send(random.choice(funFact))
+
 
 #Twitter
 #Envoyer un tweet
@@ -1237,9 +1335,7 @@ async def removebg(ctx, text): #site ok
 #Database    
 ancien = ["Highest ça va ?","Waaaaaah le dinosaure","Même Highest est moins vieux","T'es vivant?????", "Starfoullah comment t'as fait pour vivre aussi longtemps????"]
 futuriste = ["Tu es dans le futur.", "Wahahaha Baby Bosse","Même Steve Jobs il était moins dans le turfu que toi","Imagine je suis ton futur daron ptdrrrrrrr"]
-
-
-@bot.command(aliases=['add_birthday','set_birthday','birthday_set'])
+@bot.command(aliases=['add_birthday','set_birthday','birthday_set']) #site ok
 async def birthday_add(ctx, day : int, month : str, year : int = None):
     # Vérifier si la date est valide - jour de naissance
     if day < 1:
@@ -1309,7 +1405,7 @@ async def birthday_add(ctx, day : int, month : str, year : int = None):
             await msg.edit(content=f"Impossible d\'ajouter votre date de naissance ❌ !\n```\n{setBirthday['data']['message']}\n```")
         return
 
-@bot.command(aliases=['birthdays','list_birthday'])
+@bot.command(aliases=['birthdays','list_birthday']) #site ok
 async def birthday(ctx, member : discord.Member = None):
     # Si aucune personne n'est mentionnée
     if (not member):
@@ -1370,8 +1466,137 @@ async def birthday(ctx, member : discord.Member = None):
         # Envoyer l'embed
         return await ctx.send(embed=embed)
 
+@bot.command(aliases=['set_reply'])
+async def set_rep(ctx, *args):
+    # Vérifier si l'utilisateur a les permissions
+    if(not ctx.author.guild_permissions.administrator):
+        return await ctx.reply("Vous n'avez pas les permissions pour faire cette commande ! Vous devez être administrateur sur ce serveur")
+
+    # Vérifier si l'utilisateur a bien entré un argument
+    if(len(args) == 0):
+        return await ctx.reply("Vous devez entrer un argument !\n\nListe des arguments possible :\n> `cpp` (c'est pas possible)\n> `bonbon` (BONBON :candy:)\n> `linuxmerde` (linux c'est de la merde)\n> `jannotgaming` (Jannot Gaming)\n> `tutititutu`\n> `changezstickman` (changez pour stickman)\n> `apple`\n> `scratch`\n> `bonjoir`\n> `courgette`\n> `ouille`\n\n*vous pouvez faire `e!set_reply all` pour tout activer/désactiver*")
+
+    # Vérifier si l'argument ne fais pas parti d'une certaine liste
+    if(args[0] not in ["cpp","bonbon","linuxmerde","jannotgaming","tutititutu","changezstickman","apple","noice","scratch","bonjoir","courgette","ouille","all"]):
+        return await ctx.reply("Vous devez entrer un argument valide !\n\nListe des arguments possible :\n> `cpp` (c'est pas possible)\n> `bonbon` (BONBON :candy:)\n> `linuxmerde` (linux c'est de la merde)\n> `jannotgaming` (Jannot Gaming)\n> `tutititutu`\n> `changezstickman` (changez pour stickman)\n> `apple`\n> `scratch`\n> `bonjoir`\n> `courgette`\n> `ouille`\n\n*vous pouvez faire `e!set_reply all` pour tout activer/désactiver*")
+
+    # Vérifier si l'argument est "all"
+    if(args[0] == "all"):
+        print(str(ctx.guild.id))
+        needToDisable = supabase.table('disabledAutoMessage').select('cpp').eq('guild_id', str(ctx.guild.id)).execute()['data']
+
+        # Si la taille de la liste est 0, activer tout
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "cpp": False, "bonbon": False, "linuxmerde": False, "jannotgaming": False, "tutititutu": False, "changezstickman": False, "apple": False, "scratch": False, "bonjoir": False, "courgette": False, "ouille": False}).execute()
+            return await ctx.reply("Tout les messages automatiques ont été activé !")
+
+        needToDisable = needToDisable[0]['cpp']
+        # Vérifier si cpp est sur True
+        if(needToDisable == True):
+            # Tout désactiver
+            print(supabase.table('disabledAutoMessage').update({"cpp": False, "bonbon": False, "linuxmerde": False, "jannotgaming": False, "tutititutu": False, "changezstickman": False, "apple": False, "scratch": False, "bonjoir": False, "courgette": False, "ouille": False}).eq('guild_id', str(ctx.guild.id)).execute())
+            await ctx.send("Désactivation de tout les messages automatique...")
+
+        # Vérifier si cpp est sur False
+        if(needToDisable == False):
+            # Tout activer
+            print(supabase.table('disabledAutoMessage').update({"cpp": True, "bonbon": True, "linuxmerde": True, "jannotgaming": True, "tutititutu": True, "changezstickman": True, "apple": True, "scratch": True, "bonjoir": True, "courgette": True, "ouille": True}).eq('guild_id', str(ctx.guild.id)).execute())
+            await ctx.send("Activation de tout les messages automatique...")
+        return
+
+    # Si l'argument n'est pas "all"
+    if args[0] == "cpp":
+        needToDisable = supabase.table('disabledAutoMessage').select('cpp').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "cpp": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    if args[0] == "bonbon":
+        needToDisable = supabase.table('disabledAutoMessage').select('bonbon').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "bonbon": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    if args[0] == "linuxmerde":
+        needToDisable = supabase.table('disabledAutoMessage').select('linuxmerde').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "linuxmerde": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    if args[0] == "jannotgaming":
+        needToDisable = supabase.table('disabledAutoMessage').select('jannotgaming').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "jannotgaming": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    if args[0] == "tutititutu":
+        needToDisable = supabase.table('disabledAutoMessage').select('tutititutu').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "tutititutu": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    if args[0] == "changezstickman":
+        needToDisable = supabase.table('disabledAutoMessage').select('changezstickman').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "changezstickman": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    if args[0] == "apple":
+        needToDisable = supabase.table('disabledAutoMessage').select('apple').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "apple": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    if args[0] == "scratch":
+        needToDisable = supabase.table('disabledAutoMessage').select('scratch').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "scratch": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    if args[0] == "bonjoir":
+        needToDisable = supabase.table('disabledAutoMessage').select('bonjoir').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "bonjoir": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    if args[0] == "courgette":
+        needToDisable = supabase.table('disabledAutoMessage').select('courgette').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "courgette": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    if args[0] == "ouille":
+        needToDisable = supabase.table('disabledAutoMessage').select('ouille').execute()['data']
+        if(len(needToDisable) == 0):
+            supabase.table('disabledAutoMessage').insert({"guild_id": str(ctx.guild.id), "ouille": False}).execute()
+            return await ctx.send(f"Activation de {args[0]}...")
+
+    # Activer/désactiver l'argument
+    if(needToDisable == True):
+        print(supabase.table('disabledAutoMessage').update({ args[0]: False }).execute())
+        await ctx.send(f"Désactivation de {args[0]}...")
+    if(needToDisable == False):
+        print(supabase.table('disabledAutoMessage').update({ args[0]: True }).execute())
+        await ctx.send(f"Activation de {args[0]}...")
+
+    return
+
+@bot.command()
+async def chat(ctx, *text):
+    text = " ".join(text)
+
+    # Appeller l'API pour obtenir la réponse
+    response = requests.get(f"https://anticoupable.johanstickman.com/api/ac-chat", data={"message": text})
+    print(response.json())
+    # Faire un embed affichant la réponse
+    embed = discord.Embed(title="Selon un quelqu'un", description=(response.json()['response']).replace("{username}",f'{ctx.author.name}'), footer='"e!set-chat" bientôt dispo', color=0x00ff00)
+    await ctx.send(embed = embed)
+
+
+
+
+
 #Fin Database
 
 
-
-bot.run(auth.token) 
+bot.run(auth.token)
