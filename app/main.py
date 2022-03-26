@@ -1,57 +1,85 @@
-from operator import and_, ifloordiv, is_not
-import operator
-from typing import Text, Tuple
-import os
 from os import *
-from asyncio.futures import _FINISHED
+import platform
 import discord
 import io, base64
 import json
-from discord import channel
+from PIL import Image
+import schedule
 import auth
-from discord import user
-from discord import member
-from discord.webhook import Webhook, RequestsWebhookAdapter
-from discord import ActionRow, Button, ButtonStyle
-from discord import message
-from discord.channel import CategoryChannel
 from discord.ext import commands, tasks
-from discord.ext.commands.bot import Bot
-from discord.ext.commands.core import bot_has_permissions, check
-from discord.user import User
-from discord_slash import ButtonStyle , SlashCommand
 from discord_slash.model import ButtonStyle
+from discord_slash import *
 from discord_slash.utils.manage_components import *
+from discord_slash.utils.manage_commands import create_option
 import asyncio
 import chalk
-from datetime import date
+from datetime import date, datetime
 import random
-from discord.ext.commands.errors import BotMissingPermissions, BotMissingRole
-from discord.utils import get
-from discord_slash.utils.manage_commands import create_option, create_choice
 import requests
-from urllib import parse
-from discord import FFmpegPCMAudio
-from discord import TextChannel
-from requests.api import options
-from six import text_type
 import youtube_dl
-import tweepy
+import arrow
 
 intents = discord.Intents().default()
 intents.members = True
 
-bot = commands.Bot(command_prefix = "e!", description = "Tutititutu mais en Python", intents=intents)
-slash = SlashCommand(bot, sync_commands=True)
-musics = {} 
-ytdl = youtube_dl.YoutubeDL()
-
-
 # Supabase
 from supabase import create_client, Client
-
 supabase: Client = create_client(auth.supabase_url, auth.supabase_password)
 
+# Fonction pour obtenir le prefix d'un serveur
+async def getPrefix(client, message):
+    # Obtenir le prefix du serveur
+    prefix = supabase.table('prefix').select('*').eq('id', str(message.guild.id)).execute()
+    prefix = prefix['data']
+
+    # Si le serveur n'est même pas dans la liste, le prefix est par défaut
+    if(len(prefix) == 0):
+        #Si la plateforme est mac
+        if system =="Darwin": 
+            return 'e?'
+        else:
+            return 'e!'
+    else:
+        return prefix[0]['prefix']
+
+bot = commands.Bot(command_prefix = (getPrefix), description = "Tutititutu mais en Python", intents=intents)
+musics = {} 
+slash = SlashCommand(bot, sync_commands=True)
+ytdl = youtube_dl.YoutubeDL()
+
+blurple = 0x6200ea
+red = 0xff0000
+blue = 0x0000ff
+cyan = 0x00ffff
+corail = 0xf1263f
+
+@bot.command()
+async def prefix(ctx, prefix = None):
+    if not prefix:
+        return await ctx.reply(f"Pour personnaliser le prefix du bot. Mettez le prefix personnalisé après la commande. Exemple : `{await getPrefix(ctx, ctx)}prefix !` Pour faire que ! soit le nouveau prefix de elbot.")
+        #rajouter un bouton est-ce clair ? Si oui envoyer merci Si non Demander pourquoi 
+    else:
+        Prefix = supabase.table('prefix').select('prefix, prefix').eq('id', str(ctx.guild.id)).execute()
+        if(not str(Prefix['data']) == "[]"):
+            supabase.table('prefix').update({'prefix': prefix}).eq('id', str(ctx.guild.id)).execute()      
+            return await ctx.reply(f'Le prefix du bot a été changé ✅ !')
+        else:
+            
+            setPrefix = supabase.table('prefix').insert({ 'prefix': prefix, 'id': ctx.guild.id}).execute()
+            
+            if(setPrefix['status_code'] == 201):
+                await ctx.reply(f'Le prefix du bot a été changé ✅ !')
+            else:
+                await ctx.reply(f"Impossible d\'ajouter votre date de naissance ❌ !\n```\n{setPrefix['data']['message']}\n```")
+            return
+
+@bot.command()
+async def testPrefix(ctx):
+    prefix_test = await getPrefix(ctx, ctx)
+    await ctx.reply(f'Le prefix du serveur est : `{prefix_test}`')
+
+#clear le terminal a chaque lancement
+_ = system('clear')
 
 funFact = ["Elbot était créer de base pour diffuser seulement le tutitititutu sur un Channel du serveur Ubuntu le best",
 "Elbot a été créer le jeudi 11 février 2021, 09:47:42", 
@@ -82,12 +110,6 @@ reactionrole3 = "Among US 🚀\nMinecraft 🌆\nJeu de course 🏎\nLoL ⚔️\n
 
 bot.remove_command("help")
 
-blurple = 0x6200ea
-red = 0xff0000
-blue = 0x0000ff
-cyan = 0x00ffff
-corail = 0xf1263f
-
 elbot = 809344905674489866
 
 def isOwner(ctx):
@@ -100,71 +122,344 @@ def elWatchServ(ctx):
 def johan(ctx):
  return ctx.message.author.id == 277825082334773251
 
-
-#Fin reactroles
+# Fonction pour changer la photo de profil du bot
+async def change_avatar(image):
+    # Encoder l'image en base64
+    with open(int(image), "rb") as f:
+        encoded = base64.b64encode(f.read())
+        print(encoded)
+    # Faire une requête vers l'API de Discord
 
 @bot.event
 async def on_ready():
     print(chalk.green (f"Le code Python est allumé ! {bot.user.name}"))
+    #await change_avatar('assets/elbotdenoel.jpg')
     changeStatus.start()
+    botstart = datetime.now()
+
+    #DiscordComponents(bot)
+
 @tasks.loop(seconds = 5)
 async def changeStatus():
 	game = discord.Game(random.choice(status))
 	await bot.change_presence(status = discord.Status.idle, activity = game)
 
+
+async def getVerifiéRole(ctx):
+    roles = ctx.guild.roles
+    for role in roles:
+        if role.name == "👤 Membre 👤":
+            return role
+
+async def guildID(ctx):
+    ctx.guild.id
+
+# Fonction pour voir si un message est désactivé via Supabase
+async def checkIfMsgIsDisabled(guild_id, message):
+    # Obtenir via Supabase si le message est désactivé
+    check = supabase.table('disabledAutoMessage').select('*').eq('guild_id', str(guild_id)).execute()
+    check = check['data']
+
+    # Si le serveur n'est même pas dans la liste, le message est désactivé
+    if(len(check) == 0):
+        return True
+
+    # Si le message est désactivé
+    return check[0][message]
+
+
+@bot.event
+async def on_member_join(member):
+    channel = bot.get_channel(905370708530561034)
+    await channel.send(f"Bienvenue à toi {member.name} sur le serveur Elwatch ! ")
+ 
+@bot.event
+async def on_guild_join(guild):
+    user = bot.get_user(guild.owner.id)
+    embed=discord.Embed(title="Informations elbot.", description=(f"""Bonjour {guild.owner.name},
+            Elbot est arrivé sur votre serveur et aimerait vous informer sur certaine chose.
+            Tout d’abord si vous connaissez elbot depuis ses débuts sachez qu’il **a changé** Il a été recodé entièrement pour régler tous les problèmes qu’il avait, revu sa photo de profil et à quoi il allait servir.
+
+            elbot aimerait servir à rassembler le maximum de commandes, de fonctionnalités de certain bots afin d'avoir le moins de bots sur son serveur.
+
+            Sachez que elbot est un bot fun mais aussi un bot d’administration (kick,ban, etc…), de musique et de bientôt de statistique.
+            Pour activer les réponses automatiques du bot faites e!enable <option>.
+            En cas de problème ou si vous souhaitez faire des propositions n’hésitez pas à faire la commande e!contact <message>.
+            Merci infiniment pour votre confiance."""), color=blurple)
+    buttons = [
+        create_button(url='https://el2zay.is-a.dev/elbot/',
+                label="Site de elbot",
+                style=ButtonStyle.URL,
+        )
+        ]
+    action_row = create_actionrow(*buttons)
+    await user.send(embed = embed, components=[action_row])
+
+
+
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        embed=discord.Embed(title="Commande inexistante", description="Cette commande n'existe pas. Vérifiez que vous n'avez pas fait d'erreur de frappe. Sinon vous pouvez consultez la page d'aide https://el2zay.is-a.dev/elbot/ ", color=0xff0000)
+        embed=discord.Embed(title="Commande inexistante", description="Cette commande n'existe pas. Vérifiez que vous n'avez pas fait d'erreur de frappe.", color=0xff0000)
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
-        embed.set_footer(text="`e!contact` si vous avez un problème")
-        await ctx.message.reply(embed=embed)
         print(chalk.red(f"ERREUR: La commande {ctx.message.content} qui a été faite par {ctx.author} sur le serveur {ctx.guild.name} n'existe pas !"))
+
+        buttons = [
+        create_button(
+            style=ButtonStyle.blurple,
+            label="Signaler un problème.",
+            custom_id="1"
+                    ),
+        create_button(url='https://el2zay.is-a.dev/elbot/#services',
+                label="Page d'aide",
+                style=ButtonStyle.URL,
+        )
+        ]
+        action_row = create_actionrow(*buttons)
+        fait_choix = await ctx.reply(embed = embed, components=[action_row])
+        def check(m):
+            return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
+        button_ctx = await wait_for_component(bot, components=action_row, check=check)
+        if button_ctx.custom_id == "1":
+            await ctx.send(f"Décrivez votre problème le plus clairement possible avec le plus de détails. <@{ctx.author.id}>")
+            def checkMessage(message):
+                return message.author == ctx.message.author and ctx.message.channel == message.channel
+            
+            try:
+                signal = await bot.wait_for("message", timeout = 120, check = checkMessage)
+            except:
+                embed=discord.Embed(title="Erreur: TIMEOUUUUUUUUT", description="Cela fait plus de 120 secondes que la commade a été lancé et que vous n'avez pas répondu à cette commande. \nVous pouvez réessayer en recommençant la commande.\n Erreur N°5 ", color=0xff0000)
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+                await ctx.message.reply(embed=embed)
+            await ctx.send(f"Votre message est {signal.content}")
+                #Envoyer le message à el2zay
+            user = bot.get_user(727572859727380531)
+            await user.send(f"<@{ctx.author.id}> vous a signalé sur le serveur {ctx.guild.name}\n" + ("".join (signal.content)) + "\nErreur renvoyé par elbot : Commande inexistante.")
+            await ctx.send(f"Merci pour le signalement el2zay vous recontactera dès que possible.\nSi vous vous êtes trompés et que vous souhaitez réécrire à el2zay faites la commande `{await getPrefix(ctx, ctx)}contact`")
 
     elif isinstance(error, commands.MissingRequiredArgument):
         embed=discord.Embed(title="Erreur", description="Un argument manque (nombre, mot/lettres etc...)\nMerci de réessayer avec un argument.\nCode Erreur :  Erreur N°1", color=0xff0000)
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
-        embed.set_footer(text="`e!contact` si vous avez un problème")
-        await ctx.message.reply(embed=embed)
         print(chalk.red(f"ERREUR: La commande {ctx.message.content} faite par {ctx.author.name} sur le serveur {ctx.guild.name} manquait un argument"))
+        buttons = [
+        create_button(
+            style=ButtonStyle.blurple,
+            label="Signaler un problème.",
+            custom_id="1"
+                    ),
+        create_button(url='https://el2zay.is-a.dev/elbot/#services',
+                label="Page d'aide",
+                style=ButtonStyle.URL,
+        )
+        ]
+        action_row = create_actionrow(*buttons)
+        fait_choix = await ctx.reply(embed = embed, components=[action_row])
+        def check(m):
+            return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
+        button_ctx = await wait_for_component(bot, components=action_row, check=check)
+        if button_ctx.custom_id == "1":
+            await ctx.send(f"Décrivez votre problème le plus clairement possible avec le plus de détails. <@{ctx.author.id}>")
+            def checkMessage(message):
+                return message.author == ctx.message.author and ctx.message.channel == message.channel
+            
+            try:
+                signal = await bot.wait_for("message", timeout = 120, check = checkMessage)
+            except:
+                embed=discord.Embed(title="Erreur: TIMEOUUUUUUUUT", description="Cela fait plus de 120 secondes que la commade a été lancé et que vous n'avez pas répondu à cette commande. \nVous pouvez réessayer en recommençant la commande.\n Erreur N°5 ", color=0xff0000)
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+                await ctx.message.reply(embed=embed)
+            await ctx.send(f"Votre message est {signal.content}")
+                #Envoyer le message à el2zay
+            user = bot.get_user(727572859727380531)
+            await user.send(f"<@{ctx.author.id}> vous a signalé sur le serveur {ctx.guild.name}\n" + ("".join (signal.content)) + "\nErreur renvoyé par elbot : Manque d'un ou plusieurs argument.s.")
+            await ctx.send(f"Merci pour le signalement el2zay vous recontactera dès que possible.\nSi vous vous êtes trompés et que vous souhaitez réécrire à el2zay faites la commande `{await getPrefix(ctx, ctx)}contact`")
 
     elif isinstance(error, commands.ChannelNotReadable):
         embed=discord.Embed(title="Erreur", description="Vous n'êtes pas dans un salon pour jouer la musique", color=0xff0000)
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
-        embed.set_footer(text="`e!contact` si vous avez un problème")
-
+        embed.set_footer(text= f"`{await getPrefix(ctx, ctx)}contact` si vous avez un problème")
         await ctx.message.reply(embed=embed)
+        print(chalk.red(f"ERREUR: La commande {ctx.message.content} faite par {ctx.author.name} sur le serveur {ctx.guild.name} manquait un argument"))
+        buttons = [
+        create_button(
+            style=ButtonStyle.blurple,
+            label="Signaler un problème.",
+            custom_id="1"
+                    ),
+        create_button(url='https://el2zay.is-a.dev/elbot/#services',
+                label="Page d'aide",
+                style=ButtonStyle.URL,
+        )
+        ]
+        action_row = create_actionrow(*buttons)
+        fait_choix = await ctx.reply(embed = embed, components=[action_row])
+        def check(m):
+            return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
+        button_ctx = await wait_for_component(bot, components=action_row, check=check)
+        if button_ctx.custom_id == "1":
+            await ctx.send(f"Décrivez votre problème le plus clairement possible avec le plus de détails. <@{ctx.author.id}>")
+            def checkMessage(message):
+                return message.author == ctx.message.author and ctx.message.channel == message.channel
+            
+            try:
+                signal = await bot.wait_for("message", timeout = 120, check = checkMessage)
+            except:
+                embed=discord.Embed(title="Erreur: TIMEOUUUUUUUUT", description="Cela fait plus de 120 secondes que la commade a été lancé et que vous n'avez pas répondu à cette commande. \nVous pouvez réessayer en recommençant la commande.\n Erreur N°5 ", color=0xff0000)
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+                await ctx.message.reply(embed=embed)
+            await ctx.send(f"Votre message est {signal.content}")
+                #Envoyer le message à el2zay
+            user = bot.get_user(727572859727380531)
+            await user.send(f"<@{ctx.author.id}> vous a signalé sur le serveur {ctx.guild.name}\n" + ("".join (signal.content)) + "\nErreur renvoyé par elbot : Vous n'êtes pas dans un salon pour jouer la musique")
+            await ctx.send(f"Merci pour le signalement el2zay vous recontactera dès que possible.\nSi vous vous êtes trompés et que vous souhaitez réécrire à el2zay faites la commande `{await getPrefix(ctx, ctx)}contact`")
+
         print(chalk.red(f"ERREUR: La commande {ctx.message.content} faite par {ctx.author.name} sur le serveur {ctx.guild.name} manquait un argument"))
     elif isinstance(error, commands.MissingPermissions):
         embed=discord.Embed(title="Erreur", description="Vous n'avez pas les permissions requises. Demandez à un administrateur ou au fondateur du serveur.\nCode Erreur : Erreur N°2", color=0xff0000)
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
-        embed.set_footer(text="`e!contact` si vous avez un problème")
-        await ctx.message.reply(embed=embed)
+        embed.set_footer(text=f"`{await getPrefix(ctx, ctx)}contact` si vous avez un problème")
         print(chalk.red(f"ERREUR: {ctx.author.name} a fait la commande {ctx.message.content} qu'il n'avait pas l'autorisation de faire sur le serveur {ctx.guild.name} !"))
+        buttons = [
+        create_button(
+            style=ButtonStyle.blurple,
+            label="Signaler un problème.",
+            custom_id="1"
+                    ),
+        create_button(url='https://el2zay.is-a.dev/elbot/#services',
+                label="Page d'aide",
+                style=ButtonStyle.URL,
+        )
+        ]
+        action_row = create_actionrow(*buttons)
+        fait_choix = await ctx.reply(embed = embed, components=[action_row])
+        def check(m):
+            return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
+        button_ctx = await wait_for_component(bot, components=action_row, check=check)
+        if button_ctx.custom_id == "1":
+            await ctx.send(f"Décrivez votre problème le plus clairement possible avec le plus de détails. <@{ctx.author.id}>")
+            def checkMessage(message):
+                return message.author == ctx.message.author and ctx.message.channel == message.channel
+            
+            try:
+                signal = await bot.wait_for("message", timeout = 120, check = checkMessage)
+            except:
+                embed=discord.Embed(title="Erreur: TIMEOUUUUUUUUT", description="Cela fait plus de 120 secondes que la commade a été lancé et que vous n'avez pas répondu à cette commande. \nVous pouvez réessayer en recommençant la commande.\n Erreur N°5 ", color=0xff0000)
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+                await ctx.message.reply(embed=embed)
+            await ctx.send(f"Votre message est {signal.content}")
+                #Envoyer le message à el2zay
+            user = bot.get_user(727572859727380531)
+            await user.send(f"<@{ctx.author.id}> vous a signalé sur le serveur {ctx.guild.name}\n" + ("".join (signal.content)) + "\nErreur renvoyé par elbot :Vous n'avez pas les permissions requises. Demandez à un administrateur ou au fondateur du serveur.\nCode Erreur : Erreur N°2")
+            await ctx.send(f"Merci pour le signalement el2zay vous recontactera dès que possible.\nSi vous vous êtes trompés et que vous souhaitez réécrire à el2zay faites la commande `{await getPrefix(ctx, ctx)}contact`")
 
     elif isinstance(error, discord.Forbidden):
         embed=discord.Embed(title="Erreur", description="Je n'ai pas l'autorisation pour faire cette commande. \nEssayez de vérifier les paramètres des rôles sur le serveur.\nCode erreur : Erreur N°3", color=0xff0000)
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
-        embed.set_footer(text="`e!contact` si vous avez un problème")
-        await ctx.message.reply(embed=embed)
+        embed.set_footer(text=f"`{await getPrefix(ctx, ctx)}contact` si vous avez un problème")
         print(chalk.red(f"ERREUR: {ctx.author.name} a fait la commande {ctx.message.content} sur le serveur {ctx.guild.name} où je n'avais pas l'autorisation de la faire."))
-    
+        buttons = [
+        create_button(
+            style=ButtonStyle.blurple,
+            label="Signaler un problème.",
+            custom_id="1"
+                    ),
+        create_button(url='https://el2zay.is-a.dev/elbot/#services',
+                label="Page d'aide",
+                style=ButtonStyle.URL,
+        )
+        ]
+        action_row = create_actionrow(*buttons)
+        fait_choix = await ctx.reply(embed = embed, components=[action_row])
+        def check(m):
+            return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
+        button_ctx = await wait_for_component(bot, components=action_row, check=check)
+        if button_ctx.custom_id == "1":
+            await ctx.send(f"Décrivez votre problème le plus clairement possible avec le plus de détails. <@{ctx.author.id}>")
+            def checkMessage(message):
+                return message.author == ctx.message.author and ctx.message.channel == message.channel
+            
+            try:
+                signal = await bot.wait_for("message", timeout = 120, check = checkMessage)
+            except:
+                embed=discord.Embed(title="Erreur: TIMEOUUUUUUUUT", description="Cela fait plus de 120 secondes que la commade a été lancé et que vous n'avez pas répondu à cette commande. \nVous pouvez réessayer en recommençant la commande.\n Erreur N°5 ", color=0xff0000)
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+                await ctx.message.reply(embed=embed)
+            await ctx.send(f"Votre message est {signal.content}")
+                #Envoyer le message à el2zay
+            user = bot.get_user(727572859727380531)
+            await user.send(f"<@{ctx.author.id}> vous a signalé sur le serveur {ctx.guild.name}\n" + ("".join (signal.content)) + "\nErreur renvoyé par elbot : Je n'ai pas l'autorisation de faire cette commande ")
+            await ctx.send(f"Merci pour le signalement el2zay vous recontactera dès que possible.\nSi vous vous êtes trompés et que vous souhaitez réécrire à el2zay faites la commande `{await getPrefix(ctx, ctx)}contact`")
+
     else:
         embed=discord.Embed(title="Erreur console ", description=f"Erreur de la console: `{error}` ", color=0xff0000)
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
-        embed.set_footer(text="`e!contact` si vous avez un problème")
-        await ctx.reply(embed = embed)
+        embed.set_footer(text=f"`{await getPrefix(ctx, ctx)}contact` si vous avez un problème")
         print(chalk.red(error))
+        buttons = [
+        create_button(
+            style=ButtonStyle.blurple,
+            label="Signaler un problème.",
+            custom_id="1"
+                    ),
+        create_button(url='https://el2zay.is-a.dev/elbot/#services',
+                label="Page d'aide",
+                style=ButtonStyle.URL,
+        )
+        ]
+        action_row = create_actionrow(*buttons)
+        fait_choix = await ctx.reply(embed = embed, components=[action_row])
+        def check(m):
+            return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
+        button_ctx = await wait_for_component(bot, components=action_row, check=check)
+        if button_ctx.custom_id == "1":
+            await ctx.send(f"Décrivez votre problème le plus clairement possible avec le plus de détails. <@{ctx.author.id}>")
+            def checkMessage(message):
+                return message.author == ctx.message.author and ctx.message.channel == message.channel
+            
+            try:
+                signal = await bot.wait_for("message", timeout = 120, check = checkMessage)
+            except:
+                embed=discord.Embed(title="Erreur: TIMEOUUUUUUUUT", description="Cela fait plus de 120 secondes que la commade a été lancé et que vous n'avez pas répondu à cette commande. \nVous pouvez réessayer en recommençant la commande.\n Erreur N°5 ", color=0xff0000)
+                embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+                await ctx.message.reply(embed=embed)
+            await ctx.send(f"Votre message est {signal.content}")
+                #Envoyer le message à el2zay
+            user = bot.get_user(727572859727380531)
+            await user.send(f"<@{ctx.author.id}> vous a signalé sur le serveur {ctx.guild.name}\n" + ("".join (signal.content)) + f"\nErreur renvoyé par elbot : `{error}`")
+            return await ctx.send(f"Merci pour le signalement el2zay vous recontactera dès que possible.\nSi vous vous êtes trompés et que vous souhaitez réécrire à el2zay faites la commande `{await getPrefix(ctx, ctx)}contact`")
+        return
 
 #Message
+
 @bot.listen()
 async def on_message(message):
+    if message.content == "Hello from ElWatch!" and message.author.id == 898255769827430460:
+        await message.reply("Salutation le grand et l'unique ElWatch !")
+    if f'<@!{bot.user.id}>' in message.content:
+        buttons = [
+            create_button(url='https://el2zay.is-a.dev/elbot',
+                    label="Site",
+                    style=ButtonStyle.URL,
+            ),
+            create_button(url='https://github.com/el2zay/elbot',
+                    label="Github",
+                    style=ButtonStyle.URL,
+                    )
+    ]
+    action_row = create_actionrow(*buttons)
+    await message.reply(f"Hey mon préfix est `{await getPrefix(message, message)}`", components=[action_row])
+
     if message.content.lower()=="c'est pas possible" and message.author.id != 882167050536120340 and message.author.id != elbot and (await checkIfMsgIsDisabled(message.guild.id, 'cpp') == True):
         await message.reply("Mais si c'est possible avec la CARTE **KIWI**")
-    if message.content == ":)" or message.content == ":(":
+    if message.content == ":)" or message.content == ":(" or message.content == ":/":
         await message.reply (":S")
-    if message.content.startswith("bon") and message.author.id != 882167050536120340 and message.author.id != elbot and message.content != "BONBON 🍬" and (await checkIfMsgIsDisabled(message.guild.id, 'cpp') == True):
+    if message.content.startswith("bon ") and message.author.id != 882167050536120340 and message.author.id != elbot and message.content != "BONBON 🍬" and (await checkIfMsgIsDisabled(message.guild.id, 'bonbon') == True):
         await message.reply("BONBON 🍬")
+    if message.content.startswith("Bon ") and message.author.id != 882167050536120340 and message.author.id != elbot and message.content != "BONBON 🍬" and (await checkIfMsgIsDisabled(message.guild.id, 'bonbon') == True):
+        await message.reply("BONBON 🍬")
+    if message.content.endswith("bon") and message.author.id != 882167050536120340 and message.author.id != elbot and message.content != "BONBON 🍬" and (await checkIfMsgIsDisabled(message.guild.id, 'bonbon') == True):
+        await message.reply("BONBON 🍬")
+
     #Suisse
     if message.content.lower()=="je suis suisse" and message.author.id != "809344905674489866" and message.content != "Je suis suisse et je suis polie" and message.content != "Je suis suisse et j'ai les moyens" and message.content != "Je suis suisse mais suis-je sexy?":
         await message.reply("Mais quelle heure est il?")
@@ -238,7 +533,7 @@ async def on_message(message):
         await message.reply("*Mangez des stickman")
 
     lowerMessage = message.content.lower()
-    if lowerMessage.find("apple") != -1 and message.author.id != 882167050536120340 and message.author.id != elbot:
+    if lowerMessage.find("apple") != -1 and (await checkIfMsgIsDisabled(message.guild.id, 'apple') == True and message.author.id != 882167050536120340 and message.author.id != elbot):
         await message.reply(" https://tenor.com/view/lisa-simpsons-think-differently-gif-10459041")
         await message.add_reaction("🍎")
 
@@ -268,8 +563,7 @@ async def on_message(message):
     if lowerMessage.find("ouille") != -1 and (await checkIfMsgIsDisabled(message.guild.id, 'ouille') == True)and message.author.id != 882167050536120340 and message.author.id != elbot:
         await message.reply("https://pbs.twimg.com/media/ETkK977X0AE3x-x.jpg")
 
-
-
+#Fin Message
 #Fin Message
 
 @bot.command(aliases=['serverinfo']) #SLASH OK Site ok
@@ -284,6 +578,9 @@ async def infoserver(ctx):
     serverRegion = server.region #ok
     serverIcon = server.icon_url #ok
     serverRoles = len(server.roles) #ok
+    listRole = [r.mention for r in server.roles]
+    # if len(listRole > 20):
+    #     pass
     serverID = server.id #ok
     emoji_count = len(server.emojis) #ok
     embed = discord.Embed(title = "Commande infoserver", description = f"Information sur le serveur **{serverName}**", color=0x00ffff)
@@ -299,19 +596,8 @@ async def infoserver(ctx):
     embed.add_field(name = "Total de nombre de salons : ", value = numberOfTextChannels+numberOfVoiceChannels, inline = True)	
     embed.add_field(name = "Nombre de personnes : ", value = numberOfPerson, inline = True)	
     embed.add_field(name = "Nombre d'émoji du serveur : ", value = emoji_count, inline = True)		
-    embed.add_field(name = "Nombre de rôles : ", value = serverRoles, inline = True)	
-    await ctx.send(embed = embed)
-
-
-@bot.command(aliases=['serverinfo2']) #slash ok
-async def infoserver2(ctx): #site ok
-    server = ctx.guild
-    serverIcon = server.icon_url
-    serverName = server.name
-    serverListRole = [r.mention for r in server.roles]
-    embed = discord.Embed(title = "Commande infoserver suite", description = f"Partie 2 : Information sur le serveur **{serverName}**", color=0x00ffff)
-    embed.set_thumbnail(url = serverIcon)
-    embed.add_field(name='Liste des rôles :', value=", ".join(serverListRole))    
+    embed.add_field(name = "Nombre de rôles : ", value = serverRoles, inline = True)
+    embed.add_field(name='Liste des rôles :', value=", ".join(listRole))    
     await ctx.send(embed = embed)
 
 @bot.command(aliases=['infouser','avatar'])
@@ -321,7 +607,9 @@ async def userinfo(ctx, *, member: discord.Member=None): #site ok
     username = member.name
     userID = member.id
     usercreation = member.created_at.strftime("%d/%m/%Y à %H:%M")
-    rolelist = [r.mention for r in member.roles if r != ctx.guild.default_role]
+    rolelist = [r.mention for r in member.roles]
+    if len (rolelist) == 1:
+        rolelist[0] = "Aucun rôle"
     userjoin = member.joined_at.strftime("%d/%m/%Y à %H:%M")
     embed=discord.Embed(title=f'**Voici les infos de {username} !**', color=0x00ff00)
     embed.set_thumbnail(url=member.avatar_url)
@@ -332,24 +620,54 @@ async def userinfo(ctx, *, member: discord.Member=None): #site ok
     embed.add_field(name="Rôle(s) :", value=", ".join(rolelist), inline=False)
     await ctx.message.reply(embed=embed)
 
-    
+
 @bot.command() #ok site ok 
 async def heberger(ctx):
-    # Obtenir le nom de la plateforme
-    platform = os.name
-    # Si la plateforme est linux
-    if platform == 'linux':
+    system = platform.system()
+    # Si la plateforme est Linux
+    if system =='Linux':
         await ctx.reply("Le code python est en ce moment hébergé sur la freebox de Elie (c'est pas une blague)")
     #Si la plateforme est mac
-    if platform == "darwin" or "macOS" or "mac" or 'macintosh': 
+    if system =="Darwin": 
         await ctx.reply("Le code python est en ce moment hébergé sur le macbook d'Elie")
     else:
         await ctx.reply("OS inconnu.")
 
+@bot.command(aliases=['botinfo'])
+async def infobot(ctx):
+    system = platform.system()
+    if system =='Ubuntu':
+        os = "Ubuntu (Freebox)"
+    if system =="Darwin": 
+        os = "macOS"
+    else:
+        os = platform.system()
+    uptime = botstart
+    print(uptime)
+    embed = discord.Embed(title = "Commande infobot", description = "Information sur le bot", color=0x00ffff)
+    embed.add_field(name = "🆔 ID du bot ", value = bot.user.id, inline = True)
+    embed.add_field(name = "🏓 Ping du bot ", value = f"{round(bot.latency * 1000)} ms", inline = True)
+    embed.add_field(name = "🌟 Créé le ", value = bot.user.created_at.__format__("%d/%m/%Y à %H:%M"), inline = True)
+    embed.add_field(name = "👨‍💻 Créé par ", value = "el2zay", inline = True)
+    embed.add_field(name = "*️⃣ Version discord.py ", value = discord.__version__, inline = True)
+    embed.add_field(name = "🐍 Version Python ", value = platform.python_version(), inline = True)
+    embed.add_field(name = "🖥 OS ", value = os, inline = True)
+    embed.add_field(name = "📡 Serveurs ", value = len(bot.guilds), inline = True)
+    embed.set_footer(text = f"Pour inviter le bot faites la commande {await getPrefix(ctx, ctx)}invite")
+    buttons = [
+    create_button(url='https://el2zay.is-a.dev/elbot',
+            label="Site",
+            style=ButtonStyle.URL,
+    ),
+       create_button(url='https://github.com/el2zay/elbot',
+            label="Github",
+            style=ButtonStyle.URL,
+            )
+    ]
+    action_row = create_actionrow(*buttons)
+    await ctx.send(embed = embed, components=[action_row])
 
-
-
-@bot.command() #fait en slash
+@bot.command() 
 async def funfact(ctx):#site ok
  await ctx.send(random.choice(funFact))
 
@@ -357,13 +675,13 @@ async def funfact(ctx):#site ok
 async def count(ctx, *texte): #site ok
     texte = " ".join(texte)
     a = len(texte)
-    await ctx.reply(f"{texte} contient {a} caractères")
 
+    await ctx.reply(f"{texte} contient {a} caractères")
 
 @bot.command()
 async def embed(ctx, *,args): #site ok
     if args.split("§")[3].lower() != "blurple" and args.split("§")[3].lower() != "red" and args.split("§")[3].lower() != "rouge" and args.split("§")[3].lower() != "blue" and args.split("§")[3].lower() != "bleu" and  args.split("§")[3].lower() != "twitter" and args.split("§")[3].lower() != "cyan" and args.split("§")[3].lower() != "turquoise" and args.split("§")[3].lower() != "corail" and args.split("§")[3].lower() != "lime" and args.split("§")[3].lower() != "citron" and args.split("§")[3].lower() != "green" and args.split("§")[3].lower() != "vert" and args.split("§")[3].lower() != "yellow" and args.split("§")[3].lower() != "jaune" and args.split("§")[3].lower() != "black" and args.split("§")[3].lower() != "noir" and args.split("§")[3].lower() != "grey" and args.split("§")[3].lower() != "gris" and args.split("§")[3].lower() != "brown" and args.split("§")[3].lower() != "marron" and args.split("§")[3].lower() != "orange":
-        embed=discord.Embed(title="Couleur inexistante", description=f"Cette couleur n'existe pas. Vérifiez que vous n'avez pas fait d'erreur de frappe. Sinon n'hésitez pas à faire la commande e!list_color ou à consulter la page d'aide.https://el2zay.is-a.dev/elbot/", color=0xff0000)
+        embed=discord.Embed(title="Couleur inexistante", description=f"Cette couleur n'existe pas. Vérifiez que vous n'avez pas fait d'erreur de frappe. Sinon n'hésitez pas à faire la commande `{await getPrefix(ctx, ctx)}list_color` ou à consulter la page d'aide.https://el2zay.is-a.dev/elbot/", color=0xff0000)
         embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
         await ctx.reply(embed=embed)
         print(chalk.red(f"ERREUR: La couleur choisie par {ctx.author} sur le serveur {ctx.guild.name} n'existe pas !"))
@@ -421,9 +739,8 @@ async def embed(ctx, *,args): #site ok
 
 @bot.command() #site ok
 async def list_color(ctx):
-    embed = discord.Embed(title = "Liste des couleurs embed", description = "blurple\nred/rouge\nblue/bleu\ntwitter\ncyan/turquoise\ncorail\nlime/citron\ngreen-vert\nyellow-jaune\nblack/noir\ngrey/gris\nbrown/marron\norange\n\nLa couleur que vous soihaitez n'est pas disponible? Pas de panique faites la commande e!contact et dites la couleur que vous voulez que j'ajoute.\nVous serez prévenu quand elle sera ajoutée.", color = cyan)
+    embed = discord.Embed(title = "Liste des couleurs embed", description = f"blurple\nred/rouge\nblue/bleu\ntwitter\ncyan/turquoise\ncorail\nlime/citron\ngreen-vert\nyellow-jaune\nblack/noir\ngrey/gris\nbrown/marron\norange\n\nLa couleur que vous soihaitez n'est pas disponible? Pas de panique faites la commande {await getPrefix(ctx, ctx)}contact et dites la couleur que vous voulez que j'ajoute.\nVous serez prévenu quand elle sera ajoutée.", color = cyan)
     await ctx.reply(embed = embed)
-
 
 @bot.command() #site ok
 async def say(ctx, *texte):
@@ -431,20 +748,7 @@ async def say(ctx, *texte):
         await ctx.send("T'es con ou quoi? DIS UN MOT FRÈRE")
     if ctx.author.id != 727572859727380531:
         texte = " ".join(texte)
-        texte = texte.replace("@everyone", "everyone")
-        texte = texte.replace("@here", "here")
-        texte = texte.replace("chromebook","chrottebook")
-        texte = texte.replace("stickman","stickmerde")
-        texte = texte.replace("rmxbot","Merde inutile")
-        texte = texte.replace("AC","MEE6")
-        texte = texte.replace("Anti Coupable","MEE6")
-        texte = texte.replace("el2zay","maître bien-aimé")
-        texte = texte.replace("elie","Ô grand maitre bien aimé")
-        texte = texte.replace("Elie","Ô grand maitre bien aimé")
-        texte = texte.replace("pute","Ta mère")
-        texte = texte.replace("Pute","Ta mère")
-        texte = texte.replace(":(",":S")
-        texte = texte.replace(":)",":S")
+        texte = texte.replace("@everyone", "everyone").replace("@here", "here").replace("chromebook","chrottebook").replace("stickman","stickmerde").replace("rmxbot","Merde inutile").replace("AC","MEE6").replace("Anti Coupable","MEE6").replace("el2zay","maître bien-aimé").replace("elie","Ô grand maitre bien aimé").replace("Elie","Ô grand maitre bien aimé").replace("pute","Ta mère").replace("Pute","Ta mère").replace(":(",":S").replace(":)",":S")
         await ctx.message.delete()
         await ctx.send(texte)
     if ctx.author.id == 727572859727380531:
@@ -464,18 +768,10 @@ async def sondage(ctx, *, texte = None): #site ok
     await message.add_reaction("👎")
     await message.add_reaction("❌")
 
-
-
-@bot.command(pass_context = True)
+@bot.command()
 async def contact(ctx, *text): #site ok
     user = bot.get_user(727572859727380531)
     await user.send(f"{ctx.author} vous a dit sur le serveur {ctx.guild.name} \n" + (" ".join (text)))
-
-@bot.command(pass_context = True)
-async def dm(id : int, *text): #site ok
-    user = bot.get_user(id)
-    await user.send(" ".join(text))
-
 
 @bot.command() #site ok
 async def chinese(ctx, *text):
@@ -491,7 +787,6 @@ async def chinese(ctx, *text):
 				chineseText.append(char)
 		chineseText.append(" ")
 	await ctx.send("".join(chineseText))
-
 
 #Commande musique
 
@@ -576,7 +871,7 @@ async def play(ctx, url): #site ok
         play_song(client, musics[ctx.guild], video)
 
 @bot.command()
-async def brique(ctx):
+async def brique(ctx): #site ok
     # Fonction pour lancer une musique
     async def startMusic(ctx,vc):
         channel = ctx.author.voice.channel
@@ -618,8 +913,6 @@ async def kick(ctx, user : discord.User, *, reason = None): #site ok
     embed.add_field(name = "Raison", value = reason, inline = True)
     embed.add_field(name = "Modérateur", value = ctx.author.name, inline = True)
     await ctx.send(embed = embed)
-    embed = discord.Embed(title = "Bannissement", description = f"Un modérateur a frappé !\nVous avez été banni par {ctx.author.name} pour la raison {reason}", color=0xff2812)
-    await user.send(embed = embed)
 
 
 @bot.command()
@@ -627,9 +920,9 @@ async def kick(ctx, user : discord.User, *, reason = None): #site ok
 async def lock(ctx): #site ok
     overwrite = ctx.channel.overwrites_for(ctx.guild.default_role)
     overwrite.send_messages = False
-    await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
     embed = discord.Embed(title = "Lock", description = f"Le salon, {ctx.message.channel} est désormais verouillé 🔒", color=0x0000ff)
     await ctx.send(embed = embed)
+    await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
 
 @bot.command()
 @commands.has_permissions(manage_channels = True)
@@ -677,8 +970,12 @@ async def unban(ctx, user, *reason): #site ok
     await ctx.send(f"L'utilisateur {user} n'est pas dans la liste des bans")
  
 
-
 #Jeux
+@bot.command(aliases=['8ball'])
+async def _8ball(ctx, *question):
+    responses = ['Oui', 'Non', 'Je ne sais pas', 'Peut-être', 'Je ne sais pas encore', 'C\'est certainement pas comme ça', 'J\'ai pas répondu à ta question', 'Oui', 'Non', 'Peut-être', 'Je ne sais pas encore', 'C\'est certainement pas comme ça']
+    await ctx.reply(f'{random.choice(responses)}')
+
 
 @bot.command()
 async def roulette(ctx): #site ok 
@@ -851,8 +1148,8 @@ async def getMutedRole(ctx):
     return await createMutedRole(ctx)
 
 @bot.command()
-@commands.has_permissions(manage_messages = True) 
-async def mute(ctx, member : discord.Member, *, reason = "Aucune raison n'a été renseigné"): #site ok
+@commands.has_permissions(manage_messages = True)  #site ok
+async def mute(ctx, member : discord.Member, *, reason = "Aucune raison n'a été renseigné"):
     mutedRole = await getMutedRole(ctx)
     await member.add_roles(mutedRole, reason = reason)
     await ctx.send(f"{member.mention} a été mute !")
@@ -864,151 +1161,77 @@ async def unmute(ctx, member : discord.Member, *, reason = "Aucune raison n'a é
     mutedRole = await getMutedRole(ctx)
     await member.remove_roles(mutedRole, reason = reason)
     await ctx.send(f"{member.mention} a été unmute !")
- 
 
-async def getVerifiéRole(ctx):
-    roles = ctx.guild.roles
-    for role in roles:
-        if role.name == "👤 Membre 👤":
-            return role
 
-@bot.command()
+@bot.command(aliases=['kill','arret'])
 @commands.check(isOwner)
 async def stop_bot(ctx):
+    os = platform.system()
     await ctx.send("⚡️ D'accord je m'éteins ! ⚡️")
     await bot.logout()
-    os.kill(os.getpid())
-    os.kill(os.getpid())
-
-@bot.command()
-@commands.check(isOwner)
-async def verified(ctx, member : discord.Member):
-    verifiérole = await getVerifiéRole(ctx)
-    await member.add_roles(verifiérole)
-    await ctx.send(f"{member.mention} a été vérifié !")
-
-
-@bot.command()
-@commands.check(isOwner)
-async def verify(ctx):
-    message = await ctx.send(f"> Bienvenue à vous sur le serveur **{ctx.guild.name}**\n> \n> Vous devez lire les règles pour avoir un accès complet au serveur.\n> **Règle N°1**: Surveillez votre language, interdiction aux insultes et mot innaproprié qui pourraient blessé des personnes. Cependant les mots du style merde, putain... sont autorisés mais doivent être utilisés avec modération. \n> **Règles N°2** Interdiction de everyone\n> **Règles N°3** Vous avez totalement le droit de mentionner les fondateurs sans abus pour par exemple une relance au cas où nous avons oublié de rajouter votre bot (PS: Promis ça sera très rare)\n> **Règle N°4** Vous devez avoir un pseudo sans caractères illisibles afin de vous mentionner facilement. Si vous en avez un votre pseudo sera modifié.\n> **Règles N°5** On essayera de rendre aussi ce serveur communautaire et pas seulement pour la surveillance de bot donc si vous le souhaitiez vous pouvez parler dans le général de ce serveur.\n> Des question? Vous pourrez trouver plusieurs réponses dans le prochain salon ou sinon vous pouvez demander au staff ou aux fondateurs.\n \n Tout est ok pour vous? Parfait. Vous pouvez appuyer sur la réaction ✅")
-    await message.add_reaction("✅")
-    reaction, user = await bot.wait_for("reaction_add")       
-    if reaction.emoji == "✅":
-        await ctx.send("La recette a démarré")
-@bot.command()
-@commands.check(isOwner)
-async def unverified(ctx, member : discord.Member):
-    verifiérole = await getVerifiéRole(ctx)
-    await member.remove_roles(verifiérole)
-    await ctx.send(f"{member.mention} n'est plus verifié !")  
-
+    if os == "Linux":
+        await os.system('pm2 stop elbot')
+    elif os == "Darwin":
+        os.kill(os.getpid())
+        os.kill(os.getpid())
 
 @bot.command()
 @commands.check(isOwner)
 async def sayticket(ctx):
-    embed = discord.Embed(title= "Ticket",description = "Bonjour,\nVous souhaitrez faire surveiller votre bot par ElwatchOnline?\nOu vous avez une question?\nOu une autre demande? C'est simple... il vous suffit tout simplement de faire la commande e!ticket dans un salon.\n\nOn est impatient de vous aidez 👀", color= 0xf1263f)
-    message = await ctx.send(embed = embed)
-    
-
-@bot.command()
-async def ticket(ctx, user: discord.Member=False): #site ok
-    if ctx.guild.id != 881488037979250768:
-        embed=discord.Embed(title="Erreur", description="Cette commande n'existe pas sur ce serveur.\nMerci de réessayer sur un serveur où la commande e!ticket est disponible.\nCode Erreur:  Erreur N°6", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
-        await ctx.message.reply(embed=embed)
-    elif ctx.guild.id == 881488037979250768:
-        select = create_select(
-        options=[
-                create_select_option("Surveiller votre bot", value="1"),
-                create_select_option("Question/Renseignement", value="2"),
-                create_select_option("Autre demande...", value="3")
-            ],
-            placeholder="Veuillez sélectionner le type de votre demande.",
-            min_values=1,
-            max_values=1
-        )
-        fait_choix = await ctx.send("Liste Ticket", components=[create_actionrow(select)])
-
-        def check(m):
-            return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
-
-        choice_ctx = await wait_for_component(bot, components=select, check=check)
-
-        if choice_ctx.values[0] == "1":
-            embed = discord.Embed(title= "Ticket",description = f"Bonjour,\nVous avez sélectionner l'option Surveiller votre bot par Elwatch... Merci de bien vouloir patienter un salon sera créer\n", color= blurple)
-            await choice_ctx.send(embed = embed)
-            # Obtenir la catégorie
-            category = discord.utils.get(ctx.guild.categories, name='ticket')
-            #permissions
-            perms = { 'read_messages': True, 'send_messages': True, 'connect': True, 'speak': True }
-            overwrites = {ctx.message.author: discord.PermissionOverwrite(**perms), 
-    ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-    ctx.guild.me: discord.PermissionOverwrite(read_messages=False)
-}
-            # Crée le salon
-            channel = await ctx.guild.create_text_channel(name =  f"ticket-{ctx.message.author.name}-1", category = category, overwrites=overwrites)
-            #Envoyer un message d'information dans le ticket
-        embed=discord.Embed(title="Ticket \"Ajouter son bot\"", description="Merci de bien vouloir mettre ces informations pour éviter toute perte de temps.\n-Nom du bot\n-ID du bot\n-Lien d'invitation du bot **SANS** les autorisations admin.\n\nNous vous recontacterons dès que votre bot a été ajouter à la base de données.", color=0xff0000)
-        await channel.send(embed = embed)
-        #Envoyer un MP à el2zay 
-        user = bot.get_user(727572859727380531)
-        await user.send(f"{ctx.author} a envoyé une demande d'ajout de son bot.\nticket-{ctx.message.author.name}-1")
-
-        if choice_ctx.values[0] == "2":
-            embed = discord.Embed(title= "Ticket",description = f"Bonjour,\nVous avez sélectionner l'option Question/Renseignement... Merci de bien vouloir patienter un salon sera créer\n", color= blurple)
-            await choice_ctx.send(embed = embed)
-            # Obtenir la catégorie
-            category = discord.utils.get(ctx.guild.categories, name='ticket')
-            perms = { 'read_messages': True, 'send_messages': True, 'connect': True, 'speak': True }
-            overwrites = {ctx.message.author: discord.PermissionOverwrite(**perms), 
-    ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-    ctx.guild.me: discord.PermissionOverwrite(read_messages=False)
-}           
-            #Créer le salon
-            await ctx.guild.create_text_channel(name =  f"ticket-{ctx.message.author.name}-2", category = category, overwrites=overwrites)
-            user = bot.get_user(727572859727380531)
-            await user.send(f"{ctx.author} souhaite se renseigner ou a des questions.\nticket-{ctx.message.author.name}-2")
-        if choice_ctx.values[0] == "3":
-            embed = discord.Embed(title= "Ticket",description = f"Bonjour,\nVous avez sélectionner l'option Autre.. Merci de bien vouloir patienter un salon sera créer\n", color= blurple)
-            await choice_ctx.send(embed = embed)
-            # Obtenir la catégorie
-            category = discord.utils.get(ctx.guild.categories, name='ticket')
-            #permissions
-            perms = { 'read_messages': True, 'send_messages': True, 'connect': True, 'speak': True }
-            overwrites = {ctx.message.author: discord.PermissionOverwrite(**perms), 
-    ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-    ctx.guild.me: discord.PermissionOverwrite(read_messages=False)
-}
-            #Créer le salon
-            await ctx.guild.create_text_channel(name =  f"ticket-{ctx.message.author.name}-3", category = category, overwrites=overwrites)
-            user = bot.get_user(727572859727380531)
-            await user.send(f"{ctx.author} a créé un ticket Autre\nticket-{ctx.message.author.name}-3")
-
-
-@bot.command()
-async def close(ctx): #site ok
-    if ctx.guild.id == 881488037979250768 and ctx.channel.category_id == 901452596638789634:
-        return await ctx.channel.delete()
-    else:
-        return await ctx.send(content=f"Ce salon n'est pas un ticket et ne peut être fermé")
+    embed = discord.Embed(title= "Ticket",description = """Bonjour,
+    Vous souhaitrez faire surveiller votre bot par Elwatch ?
+    Ou vous avez une question?
+    Ou une autre demande? 
+    C'est simple... 
+    • Il vous suffit tout simplement de cliquer sur le bouton ci-dessous et de suivre les instructions.
+    • Ou, envoyer un message privé à <@898255769827430460>""", color = corail)
+    embed.set_footer(text = "On est impatient de vous aidez 👀")
+    buttons = [
+       create_button(url='https://elwatch.vercel.app/dashboard#contact',
+            label="Dashboard",
+            style=ButtonStyle.URL,
+            )
+    ]
+    action_row = create_actionrow(*buttons)
+    await ctx.send(embed = embed, components=[action_row])
 
     
 @bot.command() 
 async def reverse(ctx): #site ok
     await ctx.send("https://tenor.com/view/power-legendary-reverse-card-econowise-reverse-card-legendary-uno-reverse-card-uno-legendary-reverse-card-gif-23531292")
 
-
 @bot.command()
 async def ping(ctx): #site ok 
-    await ctx.send(f"Le ping pong c'est de la merde je préfère utiliser des briques comme raquettes mais en tout cas j'ai {round(bot.latency * 1000)}ms (PY)")
+    date1 = datetime.now().timestamp()
+    msg = await ctx.reply(embed = discord.Embed(title= "Ping",description = "<a:chargement:922054172734550027> Vérification du ping en cours... <a:chargement:922054172734550027>", color= 0x219ebc))
+    discordping = datetime.now().timestamp() - date1
+    if round(bot.latency * 1000) <= 120:
+        colorping1 = "🟢"
+    if round(bot.latency * 1000) > 120 <= 300:
+        colorping1 = "🟡"
+    if round(bot.latency * 1000) > 300:
+        colorping1 = "🔴"
 
-@bot.command(aliases=['minuteur'])
+    if round(discordping * 1000) <= 130:
+        colorping2 = "🟢"
+    if round(discordping * 1000) > 130 <= 600:
+        colorping2 = "🟡"
+    if round(discordping * 1000) > 600:
+        colorping2 = "🔴"
+
+    await msg.edit(embed=discord.Embed(title= "Ping",description = f"Bot `{round(bot.latency * 1000)}ms` {colorping1}\n Discord `{round(discordping * 1000)} ms` {colorping2} ", color= 0x219ebc))
+
+@bot.command(aliases=['minuteur','countdown'])
 async def timer(ctx, secondes : int): #site ok
-    await ctx.reply(f"Votre minuteur de {secondes} secondes est lancé vous serez prévenu par MP lorsque le temps s'écoulera ⏲")
-    await asyncio.sleep(secondes)
+    launch = str(datetime.now())
+    await ctx.reply(f"Votre minuteur de {secondes} secondes est lancé vous venez juste de recevoir un MP pour voir le temps restant. \nVous serez prévenu par MP lorsque le temps s'écoulera ⏲")
     user = bot.get_user(ctx.author.id)
-    await user.send(f"Votre minuteur de {secondes} secondes est terminé! ⏲")
+    msg = await user.send(f'Il reste {secondes} secondes ! ')
+    while(secondes):
+        await asyncio.sleep(1)
+        secondes -=1
+        await msg.edit(content=f'Il reste {secondes} secondes ! ')
+    await user.send(f"Votre minuteur lancé le `{launch}` est terminé ! ⏲")
 
 
 @bot.command()
@@ -1022,7 +1245,7 @@ async def clear(ctx, nombre : int): #site ok
     if (nombre > 20):
         buttons = [
             create_button(
-                style=ButtonStyle.blue,
+                style=ButtonStyle.blurple,
                 label="Oui",
                 custom_id="oui"
                         ),
@@ -1042,24 +1265,80 @@ async def clear(ctx, nombre : int): #site ok
         if button_ctx.custom_id == "oui":
             await ctx.channel.purge(limit = nombre + 1)
         if button_ctx.custom_id == "non":
-            await button_ctx.edit_origin(content="Aucun message n'a été clear.")
+            return await button_ctx.edit_origin(content="Aucun message n'a été clear.")
 
+#Faire une commande first qui récupère le premier message du salon
+
+
+
+@bot.command()
+async def nuke(ctx):
+    if ctx.author.id != ctx.guild.owner.id:
+        embed=discord.Embed(title="Erreur : Autorisation ", description=f"Seul le fondateur peut utiliser cette commande pour des raison de sécurité *logique*\nIci le fondateur est {ctx.guild.owner.name}", color=0xff0000)
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+        return await ctx.reply(embed = embed)
+    else:
+        embed=discord.Embed(title="ATTENTION !!! ", description="Cette commande permet d'effacer ce salon !!!! Cette action est **irréversible**\nSouhaitez-vous effectuer quand même la commande ?", color=0xff0000)
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/953664496335994920/attention.jpeg")
+        buttons = [
+        create_button(
+            style=ButtonStyle.blurple,
+            label="Ouais bon au final non",
+            custom_id="1"
+                    ),
+        create_button(
+            style=ButtonStyle.danger,
+            label="🧨 Continuer 🧨",
+            custom_id="2"
+        )
+        ]
+        action_row = create_actionrow(*buttons)
+        fait_choix = await ctx.reply(embed = embed, components=[action_row])
+        def check(m):
+            return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
+        button_ctx = await wait_for_component(bot, components=action_row, check=check)
+        if button_ctx.custom_id == "1":
+            await ctx.message.delete()
+            await fait_choix.delete()
+
+        if button_ctx.custom_id == "2":
+            name = ctx.channel.name
+            categories = ctx.channel.category
+            perms = ctx.channel.overwrites
+            await ctx.send("ADIOS AMIGOS")
+            await ctx.send("https://tenor.com/view/explosion-gif-13800218")
+            await asyncio.sleep(3)
+            await ctx.channel.delete()
+            channel = await ctx.guild.create_text_channel(name = name, category = categories, overwrites = perms)
+            await channel.send(f"Le salon #{name} s'est bien fait nuké 😎")
 @bot.command()
 async def help(ctx):
     select = create_select(
         options=[
             create_select_option("🤖 Commande de base 🤖", value="1"),
             create_select_option("🧠 Administration 🧠", value="2"),
-            create_select_option("🎵 Musique 🎵", value="3"),
-            create_select_option("💻 Database 💻", value="4"),
-            create_select_option("🎮 Jeux 🎮", value="5"),
-            create_select_option("👾 Autre 👾", value="6")
+            create_select_option("👁 Serveur Elwatch 👁", value="3"),
+            create_select_option("🎵 Musique 🎵", value="4"),
+            create_select_option("💻 Database 💻", value="5"),
+            create_select_option("🎮 Jeux 🎮", value="6"),
+            create_select_option("👾 Autre 👾", value="7")
         ],
         placeholder="Veuillez sélectionner le type de votre demande.",
         min_values=1,
         max_values=1
     )
-    fait_choix = await ctx.send("Commande help", components=[create_actionrow(select)])
+    buttons = [
+        create_button(url='https://el2zay.is-a.dev/elbot',
+                label="Site",
+                style=ButtonStyle.URL,
+        ),
+        create_button(url='https://github.com/el2zay/elbot',
+                label="Github",
+                style=ButtonStyle.URL,
+        )
+        ]
+    action_row = create_actionrow(*buttons)
+    fait_choix = await ctx.send("Commande help", components=[create_actionrow(select),action_row])
 
     def check(m):
         return m.author_id == ctx.author.id and m.origin_message.id == fait_choix.id
@@ -1070,15 +1349,15 @@ async def help(ctx):
         embed = discord.Embed(title= "🤖 Commande de base 🤖",description = f"", color= cyan)
         embed.add_field(name = "say <texte>", value= "Pour me faire dire tout et n'importe quoi\nAttention Vous ne pouvez pas mentionner @here/@everyone.", inline = True)
         embed.add_field(name = "chinese <texte>", value= "Pour me faire dire tout et n'importe quoi mais où les caractères sont transformés en caractères chinois.\nAttention Vous ne pouvez pas mentionner @here/@everyone.", inline = True)
-        embed.add_field(name = "embed <titre>§<description>§<footer>§<couleur>", value = "Créer un embed à partir de elbot\ne!embed Ça c'est le titre§ça c'est la description§ça c'est le footer§et là, la couleur. (voir commande list_color)", inline = True)
-        embed.add_field(name="list_color", value= "Connaitre les couleurs disponibles pour elbot\nSi vous souhaitez faire la proposition d'une couleur n'hésitez pas contacter el2zay à l'aide de la commande e!contact.", inline=True)
+        embed.add_field(name = f"embed <titre>§<description>§<footer>§<couleur>", value = "Créer un embed à partir de elbot\n{await getPrefix(ctx, ctx)}embed Ça c'est le titre§ça c'est la description§ça c'est le footer§et là, la couleur. (voir commande list_color)", inline = True)
+        embed.add_field(name="list_color", value= f"Connaitre les couleurs disponibles pour elbot\nSi vous souhaitez faire la proposition d'une couleur n'hésitez pas contacter el2zay à l'aide de la commande {await getPrefix(ctx, ctx)}contact.", inline=True)
         embed.add_field(name = "ping", value= "Affiche le temps de latence du bot en ms.", inline = True)
         embed.add_field(name = "heberger", value= "Pour savoir sur quel hébergeur je suis héberger en ce moment !", inline = True)
         embed.add_field(name = "invite", value= "Donne un lien d'invitation pour inviter le bot sur votre serveur.", inline = True)
         embed.add_field(name = "contact <texte>", value = "Pour contacter le créateur du bot en cas de problème.", inline = True)	
         embed.add_field(name = "count <texte>", value = "Compter le nombre de caractères dans un mot ou une phrase.", inline = True)
         embed.add_field(name = "sondage <texte> (argument facultatif)", value = "Créer un sondage avec les choix \"oui\" et \"non\" grâce aux réactions.", inline = True)
-        embed.add_field(name="infoserver/serverinfo", value= "Pour connaitre les informations importantes sur ce serveur", inline=True)
+        embed.add_field(name= "infoserver/serverinfo", value= "Pour connaitre les informations importantes sur ce serveur", inline=True)
         embed.add_field(name = "infoserver2/serverinfo2", value = "Suite de la commande infoserver/serverinfo", inline = True)	
         embed.add_field(name = "infouser / avatar <user> (argument facultatif)", value = "Pour connaitre les informations sur un utilisateur", inline = True)	
         embed.set_footer(text="https://el2zay.is-a.dev/elbot")
@@ -1088,14 +1367,24 @@ async def help(ctx):
         embed.add_field(name = "clear <nombre> ❌**COMMANDE AYANT DES PROBLÈMES**❌", value= "Pour clear le nombre de message que vous souhaitiez", inline = True)
         embed.add_field(name = "kick <membre>", value= "Pour expulser un membre sur un serveur.", inline = True)
         embed.add_field(name = "ban <membre>", value = "Pour bannir un membre sur un serveur", inline = True)
-        embed.add_field(name = "unban <membre>", value= "Pour débannir un membre sur un serveur\n`e!unban el2zay#1234`", inline=True)
+        embed.add_field(name = "unban <membre>", value= f"Pour débannir un membre sur un serveur\n{await getPrefix(ctx, ctx)}unban el2zay#1234`", inline=True)
         embed.add_field(name = "lock", value= "Verouiller un salon.", inline = True)
         embed.add_field(name = "unlock", value= "Déverouiller un salon.", inline = True)
         embed.add_field(name = "mute <membre>", value = "Pour muter un membre du serveur.", inline = True)
         embed.add_field(name = "unmute <membre>", value= "Pour unmute un membre du serveur.", inline=True)
         embed.set_footer(text="https://el2zay.is-a.dev/elbot")
         await choice_ctx.send(embed = embed)
-    if choice_ctx.values[0] == "3":
+    if choice_ctx.values[0] == "3" and ctx.guild.id == 881488037979250768:
+        embed = discord.Embed(title= "👁 Serveur Elwatch 👁",description = f"Disponible uniquement sur le serveur Elwatch", color=red)
+        embed.add_field(name = "ticket", value= "Pour ouvrir un ticket", inline = True)
+        embed.add_field(name = "close", value = "Pour fermer un ticket", inline = True)
+        embed.set_footer(text="https://el2zay.is-a.dev/elbot")
+        await choice_ctx.send(embed = embed)
+    elif choice_ctx.values[0] == "3" and ctx.guild.id != 881488037979250768:
+        embed = discord.Embed(title= "Erreur 👁 Serveur Elwatch 👁",description = f"Vous n'êtes pas sur le serveur Elwatch. \nCliquez sur le bouton (bientot disponible) pour rejoindre/aller directement sur le serveur elwatch.", color=red)
+        embed.set_footer(text="https://el2zay.is-a.dev/elbot")
+        await choice_ctx.send(embed = embed)
+    if choice_ctx.values[0] == "4":
         embed = discord.Embed(title= "🎵 Musique 🎵",description = f"", color=red)
         embed.add_field(name = "play <lien>", value= "Joue de la musique grâce à un lien youtube", inline = True)
         embed.add_field(name = "stop", value = "Arrête la musique.", inline = True)
@@ -1106,13 +1395,16 @@ async def help(ctx):
         embed.add_field(name = "brique", value = "**❌COMMANDE NON FONCTIONNELLE❌**. Pour que elbot chante tutititutu", inline = True)
         embed.set_footer(text="https://el2zay.is-a.dev/elbot")
         await choice_ctx.send(embed = embed)
-    if choice_ctx.values[0] == "4":
+    if choice_ctx.values[0] == "5":
         embed = discord.Embed(title= "💻 Database 💻",description = f"Les commandes database utilisent Supabase.", color=red)
         embed.add_field(name = "set_birthday / add_birthday <JJ mois AAAA> (AAAA est facultatif)", value= "Ajouter ou modifier la date de son anniversaire.\nVotre anniversaire est affiché sur tous les serveurs où vous êtes et où est Elbot. Pas besoin de mettre plein de fois son anniversaire sur plein de serveurs.C'est cool hein :S", inline = True)
         embed.add_field(name = "birthday <membre> (argument facultatif)", value= "Voir la liste des anniversaires. Vous pouvez aussi voir la liste d'un seul membre en le mentionnant.", inline = True)
+        embed.add_field(name = "set_rep <options>", value= "Si vous souhaitez ou non les réponses automatiques de elbot du style : BONBON 🍬 ,Mais si c'est possible avec la carte kiwi...", inline = True)
+        embed.add_field(name = "set_chat / setchat <question>§<réponse>", value= "Ajouter ou modifier une réponse à une question sur la commande chat", inline = True)
+        embed.add_field(name = "chat <question>", value= "Un assistant virtuel qui se base sur vos réponses.", inline = True)
         embed.set_footer(text="https://el2zay.is-a.dev/elbot")
         await choice_ctx.send(embed = embed)
-    if choice_ctx.values[0] == "5":
+    if choice_ctx.values[0] == "6":
         embed = discord.Embed(title= "🎮 Jeux 🎮",description = f"", color=red)
         embed.add_field(name = "roulette", value= "Pour tirer au hasard qui gagnera des participants un ban ou kick ou rôle personnalisé un mute ou un gage.", inline = True)
         embed.add_field(name = "pfc <texte>", value= "Faire un pierre feuille ciseaux", inline = True)
@@ -1120,7 +1412,7 @@ async def help(ctx):
         embed.add_field(name = "number ", value= "**CETTE COMMANDE N'EST DISPONIBLE QU'EN SLASH** Pour avoir un nombre au hasard.", inline=True)
         embed.set_footer(text="https://el2zay.is-a.dev/elbot")
         await choice_ctx.send(embed = embed)
-    if choice_ctx.values[0] == "6":
+    if choice_ctx.values[0] == "7":
         embed = discord.Embed(title= "👾 Autre 👾",description = f"", color=red)
         embed.add_field(name = "pessi", value= "Pour connaitre tous les mots de pessis", inline = True)
         embed.add_field(name = "github", value= "Pour afficher le code github", inline = True)
@@ -1134,7 +1426,6 @@ async def help(ctx):
         embed.add_field(name = "dm <id>", value= "Pour me faire dire tout et n'importe quoi en mp a des personnes grâce à leurs ID's", inline=True)
         embed.set_footer(text="https://el2zay.is-a.dev/elbot")
         await choice_ctx.send(embed = embed)
-
 
 @bot.command()
 async def invite(ctx): #site ok
@@ -1151,47 +1442,16 @@ async def invite(ctx): #site ok
     action_row = create_actionrow(*buttons)
     fait_choix = await ctx.send("Veuillez choisir.", components=[action_row])
 
-
-
 @bot.command()
-async def watchbot(ctx): #site ok
-    buttons = [
-        create_button(url='https://status.watchbot.app/bot/809344905674489866',
-                label="Elbot",
-                style=ButtonStyle.URL,
-        ),
-        create_button(url='https://status.watchbot.app/bot/789214685089759253',
-                label="AC V3",
-                style=ButtonStyle.URL,
-        ),
-        create_button(url='https://status.watchbot.app/bot/789214685089759253',
-                label="AC V2",
-                style=ButtonStyle.URL,
-        ),
-        create_button(url='https://status.watchbot.app/bot/550404246290563072',
-                label="OmegaBOT",
-                style=ButtonStyle.URL,
-        ),
-        create_button(url='https://status.watchbot.app/bot/725455465701572740',
-                label="rmxbot",
-                style=ButtonStyle.URL,
-        )
-        ]
-    action_row = create_actionrow(*buttons)
-    fait_choix = await ctx.send("Lequel de ces bots souhaitiez vous connaitre les incidents reportés ?", components=[action_row])
-
-
-
-@bot.command()
-async def choix(ctx): #site ok
+async def choix(ctx):
     buttons = [
         create_button(
             style=ButtonStyle.blue,
             label="Choisissez moi",
-            custom_id="oui" 
+            custom_id="oui"
         ),
         create_button(
-            style=ButtonStyle.danger,
+            style=ButtonStyle.red,
             label="SURTOUT PAS MOI!!!",
             custom_id="non"
         )
@@ -1204,137 +1464,106 @@ async def choix(ctx): #site ok
 
     button_ctx = await wait_for_component(bot, components=action_row, check=check)
     if button_ctx.custom_id == "oui":
-        await button_ctx.edit_origin(content="Bon toutou !")
-    if button_ctx.custom_id == "non":
+        await button_ctx.edit_origin(content="Bon toutou")
+    else:
         await button_ctx.edit_origin(content="T'es vraiment con toi")
 
-
-
-#slash
-#guild_ids = [id du serv] pour test
-@slash.slash(name="number", description="Choisi un nombre au hasard pour toi.", options=[
-    create_option(name="limite_inferieure", description="Le nombre le plus bas.", option_type=4, required= True),
-    create_option(name="limite_superieure", description="Le nombre le plus haut.", option_type=4, required= True)
-
-])
-async def number(ctx, limite_inferieure, limite_superieure):
-     await ctx.send("Le nombre choisi par moi même est...")
-     await asyncio.sleep(1)
-     await ctx.send("Roulement de tambours")
-     await asyncio.sleep(2)
-     await ctx.send("🥁 taratatatatatatatatatatatatatatatatata 🥁")
-     await asyncio.sleep(1)
-     num = random.randint(limite_inferieure, limite_superieure)
-     await ctx.send(f"**{num}**")
-
-
-
-guild_ids = [865914342041714700]
-@slash.slash(name="infoserver", description="Pour connaitre les informations sur ce serveur")
-async def infoserver(ctx): #site ok
-    server = ctx.guild
-    numberOfTextChannels = len(server.text_channels) #ok
-    numberOfVoiceChannels = len(server.voice_channels) #ok
-    serverDescription = server.description #ok
-    numberOfPerson = server.member_count #ok
-    serverName = server.name #ok
-    serverOwner = server.owner
-    serverRegion = server.region #ok
-    serverIcon = server.icon_url #ok
-    serverRoles = len(server.roles) #ok
-    serverID = server.id #ok
-    emoji_count = len(server.emojis) #ok
-    embed = discord.Embed(title = "Commande infoserver", description = f"Information sur le serveur **{serverName}**", color=0x00ffff)
-    embed.set_thumbnail(url = serverIcon)
-    embed.add_field(name = "Nombre de personne : ", value= numberOfPerson, inline = True)
-    embed.add_field(name = "Description : ", value= serverDescription, inline = True)
-    embed.add_field(name = "Fondateur : ", value = serverOwner, inline = True)
-    embed.add_field(name='Date de création :', value=server.created_at.__format__("%d/%m/%Y à %H:%M"), inline=True)
-    embed.add_field(name = "ID : ", value = serverID, inline = True)	
-    embed.add_field(name = "Region : ", value = serverRegion, inline = True)
-    embed.add_field(name = "Nombre de salons textuels : ", value = numberOfTextChannels, inline = True)	
-    embed.add_field(name = "Nombre de salons vocaux : ", value = numberOfVoiceChannels, inline = True)	
-    embed.add_field(name = "Total de nombre de salons : ", value = numberOfTextChannels+numberOfVoiceChannels, inline = True)	
-    embed.add_field(name = "Nombre de personnes : ", value = numberOfPerson, inline = True)	
-    embed.add_field(name = "Nombre d'émoji du serveur : ", value = emoji_count, inline = True)		
-    embed.add_field(name = "Nombre de rôles : ", value = serverRoles, inline = True)	
-    await ctx.send(embed = embed)
-
-
-@slash.slash(name="infoserver2", description="Pour connaitre les informations sur ce serveur (Partie 2)")
-async def infoserver2(ctx):
-    server = ctx.guild
-    serverIcon = server.icon_url
-    serverName = server.name
-    serverListRole = [r.mention for r in server.roles]
-    embed = discord.Embed(title = "Commande infoserver suite", description = f"Partie 2 : Information sur le serveur **{serverName}**", color=0x00ffff)
-    embed.set_thumbnail(url = serverIcon)
-    embed.add_field(name='Liste des rôles :', value=", ".join(serverListRole))    
-    await ctx.send(embed = embed)
-
-
-
-@slash.slash(name="heberger", description="Pour savoir où est hebergé le code PY")
-async def heberger(ctx):
-    # Obtenir le nom de la plateforme
-    platform = os.name
-    # Si la plateforme est linux
-    if platform == 'linux':
-        await ctx.reply("Le code python est en ce moment hébergé sur la freebox de Elie (c'est pas une blague)")
-    #Si la plateforme est mac
-    if platform == "darwin" or "macOS" or "mac" or 'macintosh': 
-        await ctx.reply("Le code python est en ce moment hébergé sur le macbook d'Elie")
-    else:
-        await ctx.reply("OS inconnu.")
-
-@slash.slash(name="funfact", description="Pour connaitre une anecdote sur elbot et sa création.")
-async def funfact(ctx): #site ok
- await ctx.send(random.choice(funFact))
-
-
-#Twitter
-#Envoyer un tweet
-
-@bot.command(aliases=["twitter"])
-@commands.check(isOwner)
-async def tweet(ctx, *texte):
-    import auth
-    api, auth = auth.auth()
-    texte = " ".join(texte)
-    api.update_status(status=f"{texte}")
-    embed = discord.Embed(title = "Tweet envoyé", description = "Votre tweet a été envoyé!", color=0x2986cc)
-    embed.set_author(name = "ubuntulebest", icon_url = "https://pbs.twimg.com/profile_images/1390336237039403008/45vvjcIo_400x400.jpg", url = "https://twitter.com/ubuntulebest" )
-    await ctx.send(embed = embed)
-
-
 #fin twitter
+#QR
+@bot.command()
+async def qr(ctx, *text): #site ok
+    text = " ".join(text)
+    file = f"https://chart.googleapis.com/chart?cht=qr&chs=512x512&chl={text}"
+    await ctx.reply(file)
+
+#Maths
+
+@bot.command()
+async def note(ctx, n):
+    if not "/" in n and not "NaN" in n:
+        print(chalk.red(f"Erreur:, {ctx.author} n'a pas mis de / dans la commande note"))
+        embed=discord.Embed(title="Erreur : Split", description=f"Il manque le split /\nExemple: `{await getPrefix(ctx, ctx)}note 23/56` pour savoir ce qu'est 23/56 sur 10 et 20.", color=0xff0000)
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+        embed.set_footer(text=f"`{await getPrefix(ctx, ctx)}contact` si vous avez un problème")
+        return await ctx.reply(embed=embed)
+    if not "/" in n and "NaN" in n:
+        return await ctx.reply("https://tenor.com/view/sch-nan-gif-21961169")
+    n1 = float(n.split("/")[0])
+    n2 = float(n.split("/")[1])
+    if n2 == 0:
+        return await ctx.reply(f"Imagine que tu as {n1} cookie.s et que tu les partages équitablement entre zéro ami. Combien de cookies chaque personne obtient-elle ? Tu vois, ça n'a aucun sens.")
+    if n1 > n2:
+        return await ctx.reply(random.choice(["Alors frérot c'est impossible","T'as vraiment eu ça mon reuf ?", "Tu m'as pris pour rmxbot pour être aussi con ?", "C'est mathématiquement statistiquement impossible."]))
+    r = n1/n2
+    q = round(r*20, 2)
+    d = round(r*10, 2)
+    if q == 20:
+        await ctx.reply(f"**BRAVOOOOOO** 🎉🎉🎉🎉 La note {n} est de {q}/20 donc de {d}/10 🎉🎉🎉🎉")
+    elif q >= 17 and r != 20:
+        await ctx.reply(f"**OOOOH GG** 👏👏 La note {n} est de {q}/20 donc de {d}/10 👏👏")
+    elif q >= 13 and r <= 17:
+        await ctx.reply(f"C'est pas si mal ! La note {n} est de {q}/20 donc de {d}/10 👏👏")
+    elif q >= 10 and r <= 13:
+        await ctx.reply(f"Ça passe... t'as la moyenne. La note {n} est de {q}/20 donc de {d}/10")
+    elif q >= 5 and r <= 10:
+        await ctx.reply(f"Je ne souhaite pas m'exprimer à propos de ce sujet... La note {n} est de {q}/20 donc de {d}/10 ")
+    elif q <= 5 and q >= 0:
+        await ctx.reply(random.choice([f"On va revoir les bases parce que vous êtes trop con. La note {n} est de {q}/20 donc de {d}/10 ", f"<:baldi:922051105582628864> La note {n} est de {q}/20 donc de {d}/10 "]))
+    else:
+        return await ctx.reply(random.choice(["Alors frérot c'est impossible","T'as vraiment eu ça mon reuf ?", "Tu m'as pris pour rmxbot pour être aussi con ?", "C'est mathématiquement statistiquement impossible."]))
+
+
+#Fin maths
+
+
 #Removebg
 @bot.command()
 async def removebg(ctx, text): #site ok
-    response = requests.post(
-        'https://api.remove.bg/v1.0/removebg',
-        data = {
-            'image_url': (text),
-            'size': 'auto'
-        },
-        headers = { 'X-Api-Key': auth.removebg , 'Accept': 'application/json' },
-    )
-    if response.status_code == requests.codes.ok:
-        data = json.loads(response.text)
-        file = discord.File(io.BytesIO(base64.b64decode(data["data"]["result_b64"])), 'withoutBg.png')
-        await ctx.send(file=file)
+    if ctx.message.mentions and ctx.message.mentions[0]:
+        response = requests.post(
+            'https://api.remove.bg/v1.0/removebg',
+            data = {
+                'image_url': (str((bot.get_user(ctx.message.mentions[0].id)).avatar_url).replace('.webp','.png')),
+                'size': 'auto'
+            },
+            headers = { 'X-Api-Key': auth.removebg , 'Accept': 'application/json' },
+        )
+        if response.status_code == requests.codes.ok:
+            data = json.loads(response.text)
+            file = discord.File(io.BytesIO(base64.b64decode(data["data"]["result_b64"])), 'withoutBg.png')
+            await ctx.send(file=file)
+        else:
+            print(chalk.red(f"Error:, {response.status_code, response.text}"))
+            embed=discord.Embed(title="Erreur inconnue", description=f"Erreur console {response.status_code, response.text}", color=0xff0000)
+            embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+            embed.set_footer(text=f"`{await getPrefix(ctx, ctx)}contact` si vous avez un problème")
+            await ctx.message.reply(embed=embed)
     else:
-        print(chalk.red(f"Error:, {response.status_code, response.text}"))
-        embed=discord.Embed(title="Erreur inconnue", description=f"Erreur console {response.status_code, response.text}", color=0xff0000)
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
-        embed.set_footer(text="`e!contact` si vous avez un problème")
-        await ctx.message.reply(embed=embed)
-
+        text = text.replace('.webp','.png')
+        response = requests.post(
+            'https://api.remove.bg/v1.0/removebg',
+            data = {
+                'image_url': (text),
+                'size': 'auto'
+            },
+            headers = { 'X-Api-Key': auth.removebg , 'Accept': 'application/json' },
+        )
+        if response.status_code == requests.codes.ok:
+            data = json.loads(response.text)
+            file = discord.File(io.BytesIO(base64.b64decode(data["data"]["result_b64"])), 'withoutBg.png')
+            await ctx.send(file=file)
+        else:
+            print(chalk.red(f"Error:, {response.status_code, response.text}"))
+            embed=discord.Embed(title="Erreur inconnue", description=f"Erreur console {response.status_code, response.text}", color=0xff0000)
+            embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
+            embed.set_footer(text=f"`{await getPrefix(ctx, ctx)}contact` si vous avez un problème")
+            await ctx.message.reply(embed=embed)
 
 #Fin de removebg
 #Database    
 ancien = ["Highest ça va ?","Waaaaaah le dinosaure","Même Highest est moins vieux","T'es vivant?????", "Starfoullah comment t'as fait pour vivre aussi longtemps????"]
 futuriste = ["Tu es dans le futur.", "Wahahaha Baby Bosse","Même Steve Jobs il était moins dans le turfu que toi","Imagine je suis ton futur daron ptdrrrrrrr"]
+
 @bot.command(aliases=['add_birthday','set_birthday','birthday_set']) #site ok
 async def birthday_add(ctx, day : int, month : str, year : int = None):
     # Vérifier si la date est valide - jour de naissance
@@ -1406,7 +1635,7 @@ async def birthday_add(ctx, day : int, month : str, year : int = None):
         return
 
 @bot.command(aliases=['birthdays','list_birthday']) #site ok
-async def birthday(ctx, member : discord.Member = None):
+async def birthday(ctx, member : discord.Member = None): 
     # Si aucune personne n'est mentionnée
     if (not member):
         # Obtenir la liste des anniversaires sur le serveur
@@ -1414,7 +1643,7 @@ async def birthday(ctx, member : discord.Member = None):
 
         # Si aucun anniversaire
         if(str(birthdayListSupabase['data']) == "[]"):
-            embed=discord.Embed(title="Aucun anniversaire", description="Aucun anniversaire n'est enregistrer.\nFaites la commande `e!set_birthday <date>` pour enregistrer la votre !\nSinon vous pouvez consultez la page d'aide https://el2zay.is-a.dev/elbot/", color=0xff0000)
+            embed=discord.Embed(title="Aucun anniversaire", description=f"Aucun anniversaire n'est enregistrer.\nFaites la commande `{await getPrefix(ctx, ctx)}set_birthday <date>` pour enregistrer la votre !\nSinon vous pouvez consultez la page d'aide https://el2zay.is-a.dev/elbot/", color=0xff0000)
             embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/795288700594290698/909889058212311061/Sans_titre_1.jpeg")
             await ctx.message.reply(embed=embed)
             return print(chalk.red(f"ERREUR: {ctx.author} a essayé de faire la commande birthday sur le serveur {ctx.guild.name} alors que personne n'a enregistrer sa date d'anniversaire !"))
@@ -1436,7 +1665,7 @@ async def birthday(ctx, member : discord.Member = None):
         # Si aucune date n'a été enregistrer pour l'auteur du message, ajouter un footer
         birthdayExist = supabase.table('birthday').select('user_id, birthday_date_ddmmyyyy').eq('user_id', str(ctx.message.author.id)).execute()
         if(len(birthdayExist['data']) == 0):
-            embed.set_footer(text=f"Ajouter le votre : `e!set_birthday`")
+            embed.set_footer(text=f"Ajouter le votre : `{await getPrefix(ctx, ctx)}set_birthday`")
         else:
             embed.set_footer(text=f"{len(birthdayList)} anniversaire(s) enregistré(s)")
 
@@ -1458,7 +1687,6 @@ async def birthday(ctx, member : discord.Member = None):
 
         if(date.today().strftime('%d/%m') == f"{birthday[0]['birthday_date_ddmmyyyy'].split('/')[0]}/{birthday[0]['birthday_date_ddmmyyyy'].split('/')[1]}"):
             birthdayMessage += f"\n\n(pssh, c'est aujourd'hui)"
-
         # Crée un embed
         embed=discord.Embed(title=f"{member.name}#{member.discriminator}", description=birthdayMessage, color=cyan)
         embed.set_thumbnail(url=member.avatar_url)
@@ -1466,19 +1694,21 @@ async def birthday(ctx, member : discord.Member = None):
         # Envoyer l'embed
         return await ctx.send(embed=embed)
 
+
+
 @bot.command(aliases=['set_reply'])
-async def set_rep(ctx, *args):
+async def set_rep(ctx, *args): #site ok
     # Vérifier si l'utilisateur a les permissions
     if(not ctx.author.guild_permissions.administrator):
         return await ctx.reply("Vous n'avez pas les permissions pour faire cette commande ! Vous devez être administrateur sur ce serveur")
 
     # Vérifier si l'utilisateur a bien entré un argument
     if(len(args) == 0):
-        return await ctx.reply("Vous devez entrer un argument !\n\nListe des arguments possible :\n> `cpp` (c'est pas possible)\n> `bonbon` (BONBON :candy:)\n> `linuxmerde` (linux c'est de la merde)\n> `jannotgaming` (Jannot Gaming)\n> `tutititutu`\n> `changezstickman` (changez pour stickman)\n> `apple`\n> `scratch`\n> `bonjoir`\n> `courgette`\n> `ouille`\n\n*vous pouvez faire `e!set_reply all` pour tout activer/désactiver*")
+        return await ctx.reply(f"Vous devez entrer un argument !\n\nListe des arguments possible :\n> `cpp` (c'est pas possible)\n> `bonbon` (BONBON :candy:)\n> `linuxmerde` (linux c'est de la merde)\n> `jannotgaming` (Jannot Gaming)\n> `tutititutu`\n> `changezstickman` (changez pour stickman)\n> `apple`\n> `scratch`\n> `bonjoir`\n> `courgette`\n> `ouille`\n\n*vous pouvez faire `{await getPrefix(ctx, ctx)}set_reply all` pour tout activer/désactiver*")
 
     # Vérifier si l'argument ne fais pas parti d'une certaine liste
     if(args[0] not in ["cpp","bonbon","linuxmerde","jannotgaming","tutititutu","changezstickman","apple","noice","scratch","bonjoir","courgette","ouille","all"]):
-        return await ctx.reply("Vous devez entrer un argument valide !\n\nListe des arguments possible :\n> `cpp` (c'est pas possible)\n> `bonbon` (BONBON :candy:)\n> `linuxmerde` (linux c'est de la merde)\n> `jannotgaming` (Jannot Gaming)\n> `tutititutu`\n> `changezstickman` (changez pour stickman)\n> `apple`\n> `scratch`\n> `bonjoir`\n> `courgette`\n> `ouille`\n\n*vous pouvez faire `e!set_reply all` pour tout activer/désactiver*")
+        return await ctx.reply(f"Vous devez entrer un argument valide !\n\nListe des arguments possible :\n> `cpp` (c'est pas possible)\n> `bonbon` (BONBON :candy:)\n> `linuxmerde` (linux c'est de la merde)\n> `jannotgaming` (Jannot Gaming)\n> `tutititutu`\n> `changezstickman` (changez pour stickman)\n> `apple`\n> `scratch`\n> `bonjoir`\n> `courgette`\n> `ouille`\n\n*vous pouvez faire `{await getPrefix(ctx, ctx)}set_reply all` pour tout activer/désactiver*")
 
     # Vérifier si l'argument est "all"
     if(args[0] == "all"):
@@ -1582,21 +1812,92 @@ async def set_rep(ctx, *args):
     return
 
 @bot.command()
-async def chat(ctx, *text):
+async def chat(ctx, *text):#site ok
     text = " ".join(text)
 
     # Appeller l'API pour obtenir la réponse
     response = requests.get(f"https://anticoupable.johanstickman.com/api/ac-chat", data={"message": text})
-    print(response.json())
+
     # Faire un embed affichant la réponse
-    embed = discord.Embed(title="Selon un quelqu'un", description=(response.json()['response']).replace("{username}",f'{ctx.author.name}'), footer='"e!set-chat" bientôt dispo', color=0x00ff00)
+    embed = discord.Embed(title="Selon un quelqu'un", description=(response.json()['response']).replace("{username}",f'{ctx.author.name}'), color=0x00ff00)
     await ctx.send(embed = embed)
 
+@bot.command(aliases=['setchat','set-chat']) #site ok
+async def set_chat(ctx, *text):
+    # Obtenir l'argument
+    allArgs = " ".join(text)
+    print(len(allArgs.split("§")))
 
+    # Si aucun argument n'est donné
+    if(len(allArgs.split("§")) != 2):
+        return await ctx.send(f"Il manque un élément... La commande s'utilise comme ceci : `{await getPrefix(ctx, ctx)}set_chat <question>§<réponse>`")
 
+    # Obtenir certaines variable à partir de l'argument
+    question = allArgs.split("§")[0]
+    answer = allArgs.split("§")[1]
 
+    # Si il y a un élément manquant
+    if(len(allArgs.split("§")) != 2):
+        return await ctx.send(f"Il manque un élément... La commande s'utilise comme ceci : `{await getPrefix(ctx, ctx)}set_chat <question>§<réponse>`")
+
+    # Appeller l'API pour définir la réponse
+    response = requests.post(f"https://anticoupable.johanstickman.com/api/set-ac-chat", data={"question": question,"answer": answer})
+
+    # Faire un embed affichant la réponse
+    embed = discord.Embed(title="Commande AC Chat", description=f"{answer}\nA bien été ajouté à la db.", footer='Powered by anitcoupable', color=0x00ff00)
+    await ctx.send(embed = embed)
+
+@bot.command()
+async def rickdetect(ctx,link):
+    response = requests.post(f"https://rickdetect-api.johanstickman.com/checkLink", data={"link": link})
+    response = response.text
+
+    # Tenter de parse la réponse en JSON
+    try:
+        response = json.loads(response)
+    except:
+        return await ctx.send(f"Une erreur est survenue... : {response}")
+
+    # Si "fromSource" ou "fromList" est sur true
+    if response["fromSource"] == "true" or response["fromList"] == "true":
+        embed=discord.Embed(title="Ricdetect", description=f"ALERTE LE LIEN `{link}` EST EN RÉALITÉ UN RICKROLL", color=0xff0000)
+        embed.set_footer(text= "Powered by Rickdetect")
+        return await ctx.reply(embed = embed)
+    elif response["fromSource"] == "false" and response["fromList"] == "false":
+        embed=discord.Embed(title="Ricdetect", description=f"Tkt le lien`{link}` est apparemment safe ", color=0x00d300)
+        embed.set_footer(text= "Powered by Rickdetect")
+        return await ctx.reply(embed = embed)
+    else:
+        embed=discord.Embed(title="Ricdetect", description=f"Jsp pourquoi mais j'ai pas pu accéder au lien :S", color=0x00d300)
+        embed.set_footer(text= "Powered by Rickdetect")
+        return await ctx.reply(embed = embed)
 
 #Fin Database
 
+#guild_id=[id_of_server]  
+#option type : 1=sub_command 2= sub_command_group 3=string 4=int 5=bool 6=user 7=channel 8=role
+@slash.slash(name="number", description="Choisir un nombre au hasard", options=[
+    create_option(name="limite_inferieure", description="Le nombre le plus bas. 0 est la limite inférieure par défaut", option_type = 4, required=False),
+    create_option(name="limite_superieure", description="Le nombre le plus haut. 100 est la limite supérieure par défaut",option_type=4, required=False)
+])
+async def number(ctx, limite_inferieure = 0, limite_superieure = 100):
+    n = random.randint(limite_inferieure, limite_superieure)
+    async def boucle():
+        buttons = [
+        create_button(
+            style=ButtonStyle.blurple,
+            label="Nouveau",
+            custom_id="1",
+            disabled=True
+                    )
+        ]
+        action_row = create_actionrow(*buttons)
+        prems = await ctx.reply(f"**{n}**", components=[action_row])
+        button_ctx = await wait_for_component(bot, components=action_row)
+        if button_ctx.custom_id == "1":
+            num = random.randint(limite_inferieure, limite_superieure)
+            await ctx.reply(f"**{num}**", components=[action_row])
+    while True: 
+        await boucle()
 
-bot.run(auth.token)
+bot.run(auth.test)
