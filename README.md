@@ -1,7 +1,7 @@
 FRANCAIS
 
 
-# elbot0712
+# elbot
 
 Toutes les informations:
 [Site de elbot](https://el2zay.is-a.dev)
