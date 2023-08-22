@@ -8,4 +8,4 @@ Elbot est désormais sur Bachero en tant que module à part. Vous pourrez utilis
 De nouvelles commandes qui n'étaient que des idées pour elbot sont en train d'être développées pour Bachero.
 
 # Information
-Le repo el2zay,elbot est désormais archivé, le code est assez ancien et pas très optimisé. Sachez que Bachero est open source donc le module elbot aussi que vous retrouverez ici.
+Le repo[el2zay/elbot](https://github.com/el2zay/elbot) est désormais archivé, le code est assez ancien et pas très optimisé. Sachez que Bachero est open source donc le module elbot aussi que vous retrouverez [ici.](https://github.com/bacherobot/bot/tree/master/modules/el2zay.elbot)
