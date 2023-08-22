@@ -1,17 +1,15 @@
-FRANCAIS
+# Elbot sur Bachero
+
+![Elbot et BC qui se serrent la main](https://github.com/el2zay/bachero/assets/79168733/b11f40bd-c200-4a1d-bf8a-992761387e51)
+
+## Description
+
+Elbot est désormais sur Bachero en tant que module à part. Vous pourrez utiliser les commandes de elbot sur Bachero. Sachez que les commandes ont été revue et améliorée et recoder en JS.
+
+De nouvelles commandes qui n'étaient que des idées pour elbot, sont entrain d'être dévelopées pour Bachero.
 
 
-# elbot
+# Information
 
-Toutes les informations:
-[Site de elbot](https://el2zay.is-a.dev)
-
-[Invitation Basique](https://discord.com/api/oauth2/authorize?client_id=809344905674489866&permissions=1246349282406&scope=bot%20applications.commands)
-[Invitation Administrateur (Toutes les autorisations)](https://discord.com/api/oauth2/authorize?client_id=809344905674489866&permissions=8&scope=applications.commands%20bot)
-
-Un problème?
-
-Vous pouvez me contacter sur Discord,IG,Mail etc... toutes les informations de contact son disponible sur: https://el2zay.is-a.dev
-
-Prefix par défaut `e!` pour le changer faites la commande prefix Exemple : `e!prefix !` Pour que `!` devient le nouveau prefix de elbot sur le serveur.
-Si vous avez oublié le prefix mentionnez elbot.
+Le repo [el2zay/elbot](https://github.com/el2zay/elbot) est désormais archivé, le code est assez ancien et pas très optimisé. 
+Sachez que Bachero est open source donc le module elbot aussi que vous retrouverez [ici.](https://github.com/bacherobot/bot/tree/master/modules/el2zay.elbot)
